@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { EstadoServicio } from '../components/Estado';
+import { Icono } from '../components/Iconos';
 
 export interface FilaRecordatorio {
   vehiculo: { id: number; placa: string; marca: string | null; modelo: string | null };
@@ -16,37 +17,46 @@ export interface FilaRecordatorio {
 const fecha = (s: string) => new Date(s).toLocaleDateString('es-EC', { timeZone: 'UTC' });
 
 export function TablaRecordatorios({ filas }: { filas: FilaRecordatorio[] }) {
-  if (!filas.length) return <p className="py-4 text-center text-gray-500">Nada pendiente 🎉</p>;
+  if (!filas.length) {
+    return (
+      <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+        <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          <Icono nombre="check" className="h-6 w-6" />
+        </span>
+        <p className="text-sm font-semibold text-slate-500">Nada pendiente por ahora.</p>
+      </div>
+    );
+  }
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="text-left text-xs uppercase tracking-wide text-gray-500">
+      <table className="tabla">
+        <thead>
           <tr>
-            <th className="p-2">Placa</th>
-            <th className="p-2">Cliente</th>
-            <th className="p-2">Servicio</th>
-            <th className="p-2">Último</th>
-            <th className="p-2">Estado</th>
-            <th className="p-2">Teléfono</th>
+            <th>Placa</th>
+            <th>Cliente</th>
+            <th>Servicio</th>
+            <th>Último</th>
+            <th>Estado</th>
+            <th>Teléfono</th>
           </tr>
         </thead>
         <tbody>
           {filas.map((f) => (
-            <tr key={`${f.vehiculo.id}-${f.tipoServicio.id}`} className="border-t border-gray-100">
-              <td className="p-2">
-                <Link to={`/vehiculos/${f.vehiculo.id}`} className="placa">
+            <tr key={`${f.vehiculo.id}-${f.tipoServicio.id}`} className="fila">
+              <td>
+                <Link to={`/vehiculos/${f.vehiculo.id}`} className="placa text-sm">
                   {f.vehiculo.placa}
                 </Link>
               </td>
-              <td className="p-2">{f.cliente.nombre}</td>
-              <td className="p-2">{f.tipoServicio.nombre}</td>
-              <td className="p-2 whitespace-nowrap">
+              <td className="font-semibold text-tinta">{f.cliente.nombre}</td>
+              <td>{f.tipoServicio.nombre}</td>
+              <td className="whitespace-nowrap text-slate-500">
                 {fecha(f.ultimo.fecha)} · {f.ultimo.km.toLocaleString('es-EC')} km
               </td>
-              <td className="p-2">
+              <td>
                 <EstadoServicio r={f.recordatorio} />
               </td>
-              <td className="p-2 whitespace-nowrap">{f.cliente.telefono ?? '—'}</td>
+              <td className="whitespace-nowrap text-slate-500">{f.cliente.telefono ?? '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -62,30 +72,43 @@ export function Recordatorios() {
     queryFn: () => api<FilaRecordatorio[]>(`/recordatorios${estado ? `?estado=${estado}` : ''}`),
   });
 
+  const opciones = [
+    ['', 'Todos'],
+    ['LE_TOCA', 'Le toca'],
+    ['PRONTO', 'Pronto'],
+  ] as const;
+
   return (
-    <>
-      <h1 className="text-2xl font-bold">Recordatorios</h1>
-      <p className="mb-4 text-gray-500">Según el catálogo y el kilometraje estimado de cada vehículo.</p>
-      <div className="mb-4 flex gap-2">
-        {(
-          [
-            ['', 'Todos'],
-            ['LE_TOCA', 'Le toca'],
-            ['PRONTO', 'Pronto'],
-          ] as const
-        ).map(([v, t]) => (
+    <div className="space-y-5">
+      <header>
+        <span className="eyebrow">Mantenimiento preventivo</span>
+        <h1 className="page-title">Recordatorios</h1>
+        <p className="page-sub">Según el catálogo y el kilometraje estimado de cada vehículo.</p>
+      </header>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {opciones.map(([v, t]) => (
           <button
             key={v}
+            type="button"
             onClick={() => setEstado(v)}
-            className={`rounded-full border px-4 py-1 text-sm font-semibold ${estado === v ? 'border-marca bg-marca text-white' : 'border-gray-300 bg-white'}`}
+            className={`tab ${estado === v ? 'tab-on' : 'tab-off'}`}
           >
             {t}
           </button>
         ))}
+        <span className="ml-auto text-sm text-slate-500">
+          {data ? `${data.length} mantenimientos` : 'Cargando…'}
+        </span>
       </div>
-      <section className="rounded-xl border border-gray-200 bg-white p-4">
-        {isLoading ? <p className="text-gray-500">Cargando…</p> : <TablaRecordatorios filas={data ?? []} />}
+
+      <section className="card overflow-hidden">
+        {isLoading ? (
+          <p className="p-6 text-center text-sm text-slate-500">Cargando…</p>
+        ) : (
+          <TablaRecordatorios filas={data ?? []} />
+        )}
       </section>
-    </>
+    </div>
   );
 }

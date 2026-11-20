@@ -157,3 +157,13 @@ model OrdenItem {
   @@index([tipoServicioId])
   @@map("orden_items")
 }
+
+/// Contenido editable de la landing pública (banners, servicios, contacto). Una sola fila: clave "principal".
+model ConfiguracionLanding {
+  id            Int      @id @default(autoincrement())
+  clave         String   @unique @default("principal") @db.VarChar(50)
+  datos         Json
+  actualizadoEn DateTime @default(now()) @map("actualizado_en") @db.Timestamp(6)
+
+  @@map("configuraciones_landing")
+}

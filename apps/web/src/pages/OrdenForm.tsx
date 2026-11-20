@@ -3,6 +3,7 @@ import { normalizarPlaca, type Carroceria, type ChecklistRecepcion, type MarcaDa
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api';
+import { Icono } from '../components/Iconos';
 import { Checklist, Combustible, DiagramaCarroceria } from '../components/Recepcion';
 import {
   abrirPdf,
@@ -67,12 +68,15 @@ const valorFila = (f: FilaItem) => (Number(f.cantidad) || 0) * (Number(f.precioU
 // ─── Piezas de interfaz ───
 function Tarjeta({ titulo, children, extra }: { titulo: string; children: ReactNode; extra?: ReactNode }) {
   return (
-    <section className="mb-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <h2 className="flex items-center justify-between bg-marca px-4 py-2 text-sm font-bold tracking-wider text-white uppercase">
-        {titulo}
+    <section className="mb-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+      <h2 className="flex items-center justify-between bg-tinta px-4 py-2.5 font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-white">
+        <span className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-marca" />
+          {titulo}
+        </span>
         {extra}
       </h2>
-      <div className="p-4">{children}</div>
+      <div className="p-4 md:p-5">{children}</div>
     </section>
   );
 }
@@ -80,12 +84,12 @@ function Tarjeta({ titulo, children, extra }: { titulo: string; children: ReactN
 function Campo({ etiqueta, children, ancho = '' }: { etiqueta: string; children: ReactNode; ancho?: string }) {
   return (
     <label className={`block ${ancho}`}>
-      <span className="mb-0.5 block text-xs font-bold tracking-wide text-gray-500 uppercase">{etiqueta}</span>
+      <span className="label">{etiqueta}</span>
       {children}
     </label>
   );
 }
-const INPUT = 'w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-marca focus:ring-2 focus:ring-marca-suave focus:outline-none';
+const INPUT = 'input';
 
 export function OrdenForm() {
   const { id } = useParams();
@@ -280,14 +284,14 @@ export function OrdenForm() {
   const tablaFilas = (tipo: TipoItem, lista: FilaItem[]) => (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
-          <thead className="text-left text-xs tracking-wide text-gray-500 uppercase">
+        <table className="tabla min-w-[520px]">
+          <thead>
             <tr>
-              <th className="p-1">{tipo === 'REPUESTO' ? 'Repuesto' : 'Trabajo'}</th>
-              <th className="w-52 p-1">Servicio del catálogo</th>
-              <th className="w-16 p-1">Cant.</th>
-              <th className="w-24 p-1">P. unit.</th>
-              <th className="w-20 p-1 text-right">Valor</th>
+              <th>{tipo === 'REPUESTO' ? 'Repuesto' : 'Trabajo'}</th>
+              <th className="w-52">Servicio del catálogo</th>
+              <th className="w-16">Cant.</th>
+              <th className="w-24">P. unit.</th>
+              <th className="w-20 text-right">Valor</th>
               <th className="w-8" />
             </tr>
           </thead>
@@ -348,12 +352,13 @@ export function OrdenForm() {
           </tbody>
         </table>
       </div>
-      <div className="mt-2 flex items-center justify-between">
-        <button type="button" className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-semibold" onClick={() => setFilas([...filas, filaNueva(tipo)])}>
-          + Agregar {tipo === 'REPUESTO' ? 'repuesto' : 'trabajo'}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <button type="button" className="btn btn-borde btn-sm" onClick={() => setFilas([...filas, filaNueva(tipo)])}>
+          <Icono nombre="mas" className="h-3.5 w-3.5" />
+          Agregar {tipo === 'REPUESTO' ? 'repuesto' : 'trabajo'}
         </button>
-        <span className="text-sm text-gray-500">
-          Subtotal <b className="text-tinta">{dinero(suma(lista))}</b>
+        <span className="text-sm text-slate-500">
+          Subtotal <b className="font-display text-tinta">{dinero(suma(lista))}</b>
         </span>
       </div>
     </div>
@@ -363,20 +368,31 @@ export function OrdenForm() {
 
   return (
     <form onSubmit={(e) => guardar(e)}>
-      <Link to={editando ? `/ordenes/${id}` : '/'} className="text-sm text-gray-500 underline">
-        ← Volver
+      <Link
+        to={editando ? `/ordenes/${id}` : '/'}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-marca"
+      >
+        <Icono nombre="flecha" className="h-4 w-4 rotate-180" />
+        Volver
       </Link>
-      <div className="my-3 flex flex-wrap items-end justify-between gap-2">
-        <h1 className="text-2xl font-bold">
-          {editando ? (
-            <>
-              Orden de trabajo <span className="text-marca">N° {formatoNumero(numero ?? 0)}</span>
-            </>
-          ) : (
-            'Recibir vehículo · Nueva orden'
-          )}
-        </h1>
-        {vehiculo?.kmActual != null && <span className="text-sm text-gray-500">Último km registrado: {km(vehiculo.kmActual)}</span>}
+      <div className="my-4 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <span className="eyebrow">{editando ? 'Edición de la orden' : 'Recepción en el taller'}</span>
+          <h1 className="page-title">
+            {editando ? (
+              <>
+                Orden de trabajo <span className="text-marca">N° {formatoNumero(numero ?? 0)}</span>
+              </>
+            ) : (
+              'Recibir vehículo'
+            )}
+          </h1>
+        </div>
+        {vehiculo?.kmActual != null && (
+          <span className="chip bg-white text-slate-600 ring-1 ring-slate-200">
+            Último km registrado: {km(vehiculo.kmActual)}
+          </span>
+        )}
       </div>
 
       <Tarjeta titulo="Vehículo y cliente">
@@ -401,7 +417,7 @@ export function OrdenForm() {
                 onBlur={() => !vehiculo && !placaNueva && buscarPlaca()}
               />
               {!editando && (
-                <button type="button" className="rounded-lg bg-tinta px-3 font-semibold text-white" onClick={buscarPlaca}>
+                <button type="button" className="btn btn-tinta shrink-0 px-3" onClick={buscarPlaca}>
                   {buscandoPlaca ? '…' : 'Buscar'}
                 </button>
               )}
@@ -508,25 +524,26 @@ export function OrdenForm() {
         </Tarjeta>
       </fieldset>
 
-      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center gap-3 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
+      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center gap-3 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-16px_rgba(15,23,42,0.35)] backdrop-blur md:-mx-8 md:px-8">
         <div className="mr-auto">
-          <span className="text-sm text-gray-500">Total </span>
-          <b className="text-2xl text-marca">{dinero(suma(filas))}</b>
-          <span className="ml-3 text-xs text-gray-500">
+          <span className="text-sm text-slate-500">Total </span>
+          <b className="font-display text-2xl font-black text-marca">{dinero(suma(filas))}</b>
+          <span className="ml-3 text-xs text-slate-500">
             Repuestos {dinero(suma(repuestos))} · Mano de obra {dinero(suma(manoObra))}
           </span>
         </div>
         {error && <p className="w-full rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 md:order-first">{error}</p>}
-        <button type="submit" disabled={guardando} className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 font-semibold disabled:opacity-50">
+        <button type="submit" disabled={guardando} className="btn btn-borde">
           Guardar
         </button>
         <button
           type="button"
           disabled={guardando}
           onClick={(e) => guardar(e as unknown as FormEvent, true)}
-          className="rounded-lg bg-marca px-5 py-2.5 font-semibold text-white hover:bg-marca-oscuro disabled:opacity-50"
+          className="btn btn-marca"
         >
-          {guardando ? 'Guardando…' : '🖨 Guardar e imprimir'}
+          <Icono nombre="imprimir" className="h-4 w-4" />
+          {guardando ? 'Guardando…' : 'Guardar e imprimir'}
         </button>
       </div>
     </form>

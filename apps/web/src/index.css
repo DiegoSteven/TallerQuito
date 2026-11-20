@@ -1,18 +1,185 @@
 @import "tailwindcss";
 
-/* Colores del taller: blanco y rojo */
+/*
+ * Tema del sistema interno.
+ * Misma identidad que la landing: azul marino técnico, rojo de marca,
+ * tipografía Barlow para títulos e Inter para lectura.
+ */
 @theme {
   --color-marca: #c8102e;
   --color-marca-oscuro: #9e0b23;
   --color-marca-suave: #fdeaec;
-  --color-tinta: #1f2328;
+  --color-tinta: #0f172a;
+  --color-tinta-suave: #1e293b;
+  --color-carbon: #334155;
+  --color-humo: #f1f5f9;
+  --font-display: "Barlow", "Segoe UI", system-ui, sans-serif;
   --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 32px -18px rgba(15, 23, 42, 0.22);
 }
 
-body {
-  @apply bg-gray-50 text-tinta antialiased;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-humo font-sans text-carbon antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-tinta;
+  }
+
+  ::selection {
+    @apply bg-marca text-white;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184 / 0.6) transparent;
+  }
 }
 
-.placa {
-  @apply inline-block rounded border-2 border-tinta bg-white px-2 font-extrabold tracking-wider;
+@layer components {
+  /* ─── Superficies ─── */
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-head {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 md:px-6;
+  }
+
+  .card-title {
+    @apply font-display text-base font-extrabold tracking-tight text-tinta;
+  }
+
+  .eyebrow {
+    @apply font-display text-[11px] font-extrabold uppercase tracking-[0.2em] text-marca;
+  }
+
+  .page-title {
+    @apply font-display text-2xl font-black tracking-tight text-tinta md:text-3xl;
+  }
+
+  .page-sub {
+    @apply mt-1 text-sm text-slate-500;
+  }
+
+  /* Fondo oscuro con brillo rojo, como el hero de la landing. */
+  .panel-oscuro {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(200, 16, 46, 0.38), transparent 46%),
+      radial-gradient(circle at 92% 100%, rgba(51, 65, 85, 0.55), transparent 55%),
+      #0f172a;
+  }
+
+  .grilla-tecnica {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+    background-size: 46px 46px;
+  }
+
+  /* ─── Formularios ─── */
+  .label {
+    @apply mb-1.5 block font-display text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-tinta shadow-sm outline-none transition placeholder:text-slate-400 focus:border-marca focus:ring-4 focus:ring-marca/10 disabled:bg-slate-50 disabled:text-slate-400;
+  }
+
+  /* ─── Botones ─── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-display text-sm font-bold tracking-wide transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-marca/20 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-marca {
+    @apply bg-marca text-white shadow-sm hover:-translate-y-0.5 hover:bg-marca-oscuro hover:shadow-lg hover:shadow-marca/25;
+  }
+
+  .btn-tinta {
+    @apply bg-tinta text-white shadow-sm hover:bg-tinta-suave;
+  }
+
+  .btn-borde {
+    @apply border border-slate-300 bg-white text-tinta hover:border-slate-400 hover:bg-slate-50;
+  }
+
+  .btn-suave {
+    @apply bg-marca-suave text-marca hover:bg-red-100;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  /* ─── Etiquetas y pestañas ─── */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-display text-xs font-bold;
+  }
+
+  .tab {
+    @apply inline-flex items-center gap-2 rounded-full px-4 py-2 font-display text-sm font-bold transition;
+  }
+
+  .tab-on {
+    @apply bg-tinta text-white shadow-sm;
+  }
+
+  .tab-off {
+    @apply border border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:text-tinta;
+  }
+
+  .placa {
+    @apply inline-flex items-center rounded-md border-2 border-tinta bg-white px-2 py-0.5 font-display font-extrabold tracking-widest text-tinta shadow-sm;
+  }
+
+  /* ─── Enlaces de navegación lateral ─── */
+  .nav-item {
+    @apply relative flex items-center gap-3 rounded-xl px-3 py-2.5 font-display text-sm font-semibold text-slate-300 transition;
+  }
+
+  .nav-item:hover {
+    @apply bg-white/5 text-white;
+  }
+
+  .nav-item-on {
+    @apply bg-marca text-white shadow-lg shadow-marca/20;
+  }
+
+  .nav-icono {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-slate-400 transition;
+  }
+
+  .nav-item:hover .nav-icono {
+    @apply bg-white/10 text-white;
+  }
+
+  .nav-item-on .nav-icono {
+    @apply bg-white/15 text-white;
+  }
+
+  /* ─── Filas de listas y tablas ─── */
+  .fila {
+    @apply border-t border-slate-100 transition-colors hover:bg-slate-50/80;
+  }
+
+  .tabla {
+    @apply w-full text-sm;
+  }
+
+  .tabla thead th {
+    @apply border-b border-slate-200 bg-slate-50/80 px-3 py-2.5 text-left font-display text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-500;
+  }
+
+  .tabla tbody td {
+    @apply px-3 py-2.5;
+  }
 }

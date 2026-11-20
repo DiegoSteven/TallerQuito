@@ -12,3 +12,12 @@ backups/
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# Agentes locales y configuraciones de diseño
+.agents/
+AGENTS.md
+
+
+# Fotos y datos locales de la landing (en el VPS van en un volumen de Docker)
+apps/api/uploads/
+apps/api/data/

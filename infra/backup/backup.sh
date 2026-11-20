@@ -33,6 +33,13 @@ limpiar "$DIR/diarios" 7
 limpiar "$DIR/semanales" 4
 limpiar "$DIR/mensuales" 12
 
+# Fotos de la landing: copia espejo en $DIR/fotos (solo agrega o actualiza; viaja a R2 con el resto)
+if [ -d /uploads ]; then
+  mkdir -p "$DIR/fotos"
+  cp -au /uploads/. "$DIR/fotos/"
+  echo "[backup] Fotos copiadas: $(find "$DIR/fotos" -type f | wc -l) archivo(s)"
+fi
+
 if [ -n "${BACKUP_REMOTE:-}" ] && [ -f /config/rclone/rclone.conf ]; then
   rclone --config /config/rclone/rclone.conf sync "$DIR" "$BACKUP_REMOTE" --log-level NOTICE
   echo "[backup] Copia remota sincronizada en $BACKUP_REMOTE"

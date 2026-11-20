@@ -10,6 +10,8 @@
 **/.env.*
 !**/.env.example
 backups
+apps/api/uploads
+apps/api/data
 infra/backup/rclone.conf
 
 # Nada de esto hace falta para construir

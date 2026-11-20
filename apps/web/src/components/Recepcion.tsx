@@ -16,6 +16,7 @@ import {
   type Vista,
 } from '@taller/shared';
 import type { MouseEvent } from 'react';
+import { Icono } from './Iconos';
 
 // ───────────────────────── Checklist SÍ / NO ─────────────────────────
 
@@ -42,12 +43,13 @@ export function Checklist({ valor, onChange }: { valor: ChecklistRecepcion; onCh
           </span>
           <button
             type="button"
-            className="ml-auto rounded-lg border border-gray-300 px-3 py-1 font-semibold"
+            className="btn btn-borde btn-sm ml-auto"
             onClick={() => onChange(Object.fromEntries(CHECKLIST_RECEPCION.map((c) => [c.clave, valor[c.clave] ?? true])))}
           >
-            ✔ Lo demás SÍ
+            <Icono nombre="check" className="h-3.5 w-3.5" />
+            Lo demás SÍ
           </button>
-          <button type="button" className="rounded-lg border border-gray-300 px-3 py-1 font-semibold" onClick={() => onChange({})}>
+          <button type="button" className="btn btn-borde btn-sm" onClick={() => onChange({})}>
             Limpiar
           </button>
         </div>

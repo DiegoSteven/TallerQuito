@@ -39,12 +39,19 @@ services:
       SEED_ADMIN_USER: ${SEED_ADMIN_USER:-luis}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
       NUMERO_ORDEN_INICIAL: ${NUMERO_ORDEN_INICIAL:-}
+      # Dominios que pueden leer la API (la landing pública), separados por coma
+      CORS_ORIGENES: ${CORS_ORIGENES:-}
+    volumes:
+      # Fotos subidas desde "Mantenimiento web": sobreviven a reconstruir la imagen
+      - uploads:/app/uploads
     networks: [interna]
 
   caddy:
     build:
       context: .
       dockerfile: infra/caddy/Dockerfile
+      args:
+        VITE_LANDING_URL: ${LANDING_URL:-}
     restart: unless-stopped
     depends_on: [api]
     ports:
@@ -75,12 +82,15 @@ services:
       TZ: ${TZ:-America/Guayaquil}
     volumes:
       - ./backups:/backups
+      # Fotos de la landing (solo lectura): se copian a ./backups/fotos y suben a R2
+      - uploads:/uploads:ro
       # Carpeta montada completa: si rclone.conf no existe, solo se guarda la copia local.
       - ./infra/backup:/config/rclone:ro
     networks: [interna]
 
 volumes:
   pgdata:
+  uploads:
   caddy_data:
   caddy_config:
 

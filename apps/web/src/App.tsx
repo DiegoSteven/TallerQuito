@@ -9,6 +9,7 @@ import { Pendiente } from './pages/Pendiente';
 import { OrdenForm } from './pages/OrdenForm';
 import { OrdenDetalle } from './pages/OrdenDetalle';
 import { Ordenes } from './pages/Ordenes';
+import { MantenimientoLanding } from './pages/MantenimientoLanding';
 
 export function App() {
   const { usuario } = useAuth();
@@ -39,6 +40,7 @@ export function App() {
         <Route path="catalogo" element={<Pendiente titulo="Catálogo de servicios" />} />
         <Route path="usuarios" element={<Pendiente titulo="Usuarios" />} />
         <Route path="importar" element={<Pendiente titulo="Importar desde Excel" />} />
+        <Route path="landing" element={<MantenimientoLanding />} />
         <Route path="login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

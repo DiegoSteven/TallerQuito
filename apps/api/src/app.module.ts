@@ -17,6 +17,7 @@ import { RecordatoriosModule } from './recordatorios/recordatorios.module';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { ImportacionesModule } from './importaciones/importaciones.module';
+import { LandingModule } from './landing/landing.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ImportacionesModule } from './importaciones/importaciones.module';
     EstadisticasModule,
     ReportesModule,
     ImportacionesModule,
+    LandingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

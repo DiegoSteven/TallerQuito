@@ -14,3 +14,5 @@ read -r -p "Esto reemplaza la base '$POSTGRES_DB' con $ARCHIVO. Escriba SI para 
 
 pg_restore -h "${PGHOST:-postgres}" -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner "$ARCHIVO"
 echo "[restore] Listo. Reinicie la API: docker compose restart api"
+echo "[restore] Fotos de la landing: están en backups/fotos. Para devolverlas al volumen:"
+echo "          docker compose cp backups/fotos/. api:/app/uploads/"

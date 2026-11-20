@@ -3,6 +3,7 @@ import type { Recordatorio } from '@taller/shared';
 import { Link, useParams } from 'react-router-dom';
 import { api, token } from '../api';
 import { EstadoServicio } from '../components/Estado';
+import { Icono } from '../components/Iconos';
 import { formatoNumero } from '../tipos';
 
 interface Historial {
@@ -48,84 +49,155 @@ export function FichaVehiculo() {
     queryFn: () => api<Historial>(`/vehiculos/${id}/historial`),
   });
 
-  if (isLoading) return <p className="text-gray-500">Cargando…</p>;
-  if (error || !data) return <p className="text-red-700">{(error as Error)?.message ?? 'No encontrado'}</p>;
+  if (isLoading) return <p className="text-sm text-slate-500">Cargando…</p>;
+  if (error || !data) return <p className="text-sm font-semibold text-red-700">{(error as Error)?.message ?? 'No encontrado'}</p>;
   const { vehiculo: v, servicios, ordenes, kmEstimado } = data;
 
   return (
-    <>
-      <Link to="/" className="text-sm text-gray-500 underline">
-        ← Inicio
+    <div className="space-y-5">
+      <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-marca">
+        <Icono nombre="flecha" className="h-4 w-4 rotate-180" />
+        Volver al inicio
       </Link>
-      <section className="my-3 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-gray-200 bg-white p-4">
-        <div>
-          <span className="placa text-xl">{v.placa}</span>
-          <span className="ml-2 text-xl font-extrabold">{[v.marca, v.modelo, v.anio].filter(Boolean).join(' ')}</span>
-          <p className="mt-1 text-gray-500">
-            {v.motor ? `${v.motor} · ` : ''}Dueño: <b className="text-tinta">{v.cliente.nombre}</b>
-            {v.cliente.telefono ? ` · 📞 ${v.cliente.telefono}` : ''} · Último km: <b className="text-tinta">{km(v.kmActual ?? 0)}</b>
-            {kmEstimado && kmEstimado !== v.kmActual ? ` · Estimado hoy: ≈ ${km(kmEstimado)}` : ''}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => abrirPdf(v.id)} className="rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold">
-            📄 PDF historial
-          </button>
-          <Link to={`/ordenes/nueva?vehiculo=${v.id}`} className="rounded-lg bg-marca px-4 py-2 font-semibold text-white">
-            + Nueva orden
-          </Link>
+
+      <section className="card overflow-hidden">
+        <div className="panel-oscuro relative px-5 py-6 text-white md:px-8 md:py-7">
+          <div className="pointer-events-none absolute inset-0 grilla-tecnica opacity-50" />
+          <div className="relative flex flex-wrap items-start justify-between gap-5">
+            <div>
+              <span className="font-display text-[11px] font-extrabold uppercase tracking-[0.22em] text-red-300">
+                Ficha del vehículo
+              </span>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <span className="rounded-md border-2 border-white/80 bg-white/10 px-2.5 py-1 font-display text-xl font-extrabold tracking-widest text-white">
+                  {v.placa}
+                </span>
+                <h1 className="font-display text-2xl font-black tracking-tight text-white md:text-3xl">
+                  {[v.marca, v.modelo, v.anio].filter(Boolean).join(' ')}
+                </h1>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-slate-300">
+                <span className="inline-flex items-center gap-1.5">
+                  <Icono nombre="usuario" className="h-4 w-4 text-slate-400" />
+                  {v.cliente.nombre}
+                </span>
+                {v.cliente.telefono && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icono nombre="telefono" className="h-4 w-4 text-slate-400" />
+                    {v.cliente.telefono}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5">
+                  <Icono nombre="reloj" className="h-4 w-4 text-slate-400" />
+                  {km(v.kmActual ?? 0)} km
+                  {kmEstimado && kmEstimado !== v.kmActual ? ` · hoy ≈ ${km(kmEstimado)} km` : ''}
+                </span>
+                {v.motor && <span className="text-slate-400">{v.motor}</span>}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => abrirPdf(v.id)}
+                className="btn border border-white/25 bg-white/10 text-white hover:bg-white/20"
+              >
+                <Icono nombre="documento" className="h-4 w-4" />
+                PDF historial
+              </button>
+              <Link to={`/ordenes/nueva?vehiculo=${v.id}`} className="btn btn-marca">
+                <Icono nombre="mas" className="h-4 w-4" />
+                Nueva orden
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-gray-200 bg-white p-4">
-          <h2 className="mb-2 font-bold">Último servicio por tipo</h2>
-          <table className="w-full text-sm">
-            <tbody>
-              {servicios.map((s) => (
-                <tr key={s.tipoServicio.id} className="border-t border-gray-100">
-                  <td className="p-2 font-semibold">{s.tipoServicio.nombre}</td>
-                  <td className="p-2 whitespace-nowrap">{fecha(s.ultimo.fecha)}</td>
-                  <td className="p-2 whitespace-nowrap">{km(s.ultimo.km)} km</td>
-                  <td className="p-2">
-                    <EstadoServicio r={s.recordatorio} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <section className="card overflow-hidden">
+          <div className="card-head">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-marca-suave text-marca">
+                <Icono nombre="catalogo" className="h-[18px] w-[18px]" />
+              </span>
+              <div>
+                <h2 className="card-title">Último servicio por tipo</h2>
+                <p className="text-xs text-slate-500">Control de mantenimiento preventivo.</p>
+              </div>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="tabla">
+              <tbody>
+                {servicios.map((s) => (
+                  <tr key={s.tipoServicio.id} className="fila">
+                    <td className="font-semibold text-tinta">{s.tipoServicio.nombre}</td>
+                    <td className="whitespace-nowrap text-slate-500">{fecha(s.ultimo.fecha)}</td>
+                    <td className="whitespace-nowrap text-slate-500">{km(s.ultimo.km)} km</td>
+                    <td>
+                      <EstadoServicio r={s.recordatorio} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
-        <section className="rounded-xl border border-gray-200 bg-white p-4">
-          <h2 className="mb-2 font-bold">Línea de tiempo · {ordenes.length} visitas</h2>
-          <ol className="relative ml-2 border-l-2 border-gray-200">
+        <section className="card overflow-hidden">
+          <div className="card-head">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                <Icono nombre="reloj" className="h-[18px] w-[18px]" />
+              </span>
+              <div>
+                <h2 className="card-title">Línea de tiempo</h2>
+                <p className="text-xs text-slate-500">{ordenes.length} visitas registradas.</p>
+              </div>
+            </div>
+          </div>
+          <ol className="relative ml-5 border-l-2 border-slate-200 px-5 py-5">
             {ordenes.map((o) => (
-              <li key={o.id} className="mb-3 ml-5">
-                <span className="absolute -left-[7px] mt-1.5 h-3 w-3 rounded-full bg-marca ring-4 ring-white" />
-                <div className="rounded-lg border border-gray-200 p-3">
-                  <div className="flex flex-wrap justify-between gap-2 font-bold">
-                    {fecha(o.fecha)} · {km(o.kilometraje)} km
-                    <Link to={`/ordenes/${o.id}`} className="font-normal text-gray-500 hover:text-marca hover:underline">
-                      {o.estado === 'ABIERTA' && <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">En el taller</span>}
-                      N° {formatoNumero(o.numero)} · ${Number(o.total).toFixed(2)} →
+              <li key={o.id} className="relative mb-4 last:mb-0">
+                <span className="absolute -left-[27px] top-2 h-3 w-3 rounded-full bg-marca ring-4 ring-white" />
+                <div className="rounded-xl border border-slate-200 p-3.5 transition hover:border-slate-300">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-display text-sm font-bold text-tinta">
+                      {fecha(o.fecha)} · {km(o.kilometraje)} km
+                    </span>
+                    <Link
+                      to={`/ordenes/${o.id}`}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-marca"
+                    >
+                      {o.estado === 'ABIERTA' && (
+                        <span className="chip bg-amber-100 px-2 py-0.5 text-[10px] text-amber-800">En el taller</span>
+                      )}
+                      N° {formatoNumero(o.numero)} · ${Number(o.total).toFixed(2)}
+                      <Icono nombre="flecha" className="h-3.5 w-3.5" />
                     </Link>
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-slate-500">
                     {o.motivo}
                     {o.mecanico ? ` · Mec. ${o.mecanico.nombre}` : ''}
                   </p>
-                  <ul className="mt-1 list-disc pl-5 text-sm">
-                    {o.items.map((i) => (
-                      <li key={i.id}>{i.descripcion}</li>
-                    ))}
-                  </ul>
-                  {o.observaciones && <p className="mt-1 text-sm text-gray-500">📝 {o.observaciones}</p>}
+                  {o.items.length > 0 && (
+                    <ul className="mt-2 space-y-0.5 text-sm text-slate-600">
+                      {o.items.map((i) => (
+                        <li key={i.id} className="flex gap-2">
+                          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-slate-400" />
+                          {i.descripcion}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {o.observaciones && <p className="mt-1.5 text-xs italic text-slate-500">{o.observaciones}</p>}
                 </div>
               </li>
             ))}
           </ol>
         </section>
       </div>
-    </>
+    </div>
   );
 }

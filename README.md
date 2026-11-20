@@ -92,6 +92,8 @@ docker compose exec api ./node_modules/.bin/prisma db seed   # solo la primera v
 - El DNS de `APP_DOMAIN` debe apuntar al VPS **antes** de levantar Caddy (para el certificado).
 - Firewall: solo 22 (SSH con llave), 80 y 443.
 - Restaurar un respaldo: `docker compose exec backup restore.sh /backups/diarios/<archivo>.dump`
+- **Fotos de la landing** (subidas desde "Mantenimiento web"): viven en el volumen `uploads`, se sirven en `/api/uploads/` y el respaldo diario las copia a `backups/fotos` (y a R2). Para devolverlas: `docker compose cp backups/fotos/. api:/app/uploads/`
+- **Landing pública** (Cloudflare Pages): construir con `PUBLIC_API_URL=https://app.mecanicasanchez.com`. Su dominio debe estar en `CORS_ORIGENES` del `.env` para que pueda leer la API.
 - **Prueba de restauración mensual** en una base temporal (está incluida en el mantenimiento).
 
 ## Pendiente según el cronograma

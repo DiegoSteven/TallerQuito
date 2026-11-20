@@ -4,3 +4,5 @@ export * from './recordatorios';
 export * from './taller';
 export * from './recepcion';
 export * from './dibujos';
+export * from './landing';
+

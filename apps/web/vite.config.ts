@@ -11,7 +11,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // En desarrollo, /api va a la API local (en producción lo hace Caddy).
-    proxy: { '/api': 'http://localhost:3000' },
+    // En desarrollo, /api y /uploads van a la API local (en producción lo hace Caddy).
+    proxy: {
+      '/api': 'http://localhost:3000',
+      '/uploads': 'http://localhost:3000',
+    },
   },
 });

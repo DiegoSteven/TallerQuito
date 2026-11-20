@@ -12,6 +12,9 @@ COPY apps/web/package.json apps/web/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter @taller/web...
 COPY packages/shared packages/shared
 COPY apps/web apps/web
+# Dirección de la landing pública (botón "Ver landing" del panel)
+ARG VITE_LANDING_URL=""
+ENV VITE_LANDING_URL=$VITE_LANDING_URL
 RUN pnpm --filter @taller/shared build && pnpm --filter @taller/web build
 
 FROM caddy:2.10-alpine
