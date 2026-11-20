@@ -1,0 +1,97 @@
+---
+// Datos del taller (los mismos de packages/shared/src/taller.ts).
+// ⚠ Confirmar el horario con el taller antes de publicar.
+const taller = {
+  nombre: 'Mecánica Automotriz Sánchez',
+  lema: 'Su mecánica de confianza',
+  whatsapp: '593995396039',
+  telefono: '099 539 6039',
+  email: 'tecnicentrols79@gmail.com',
+  direccion: 'Av. Oswaldo Guayasamín E3-115 y Manuel Betancourt · Cumbayá, Quito',
+  horario: ['Lunes a viernes · 08:00 – 18:00', 'Sábado · 08:00 – 13:00'],
+  maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Mecánica Automotriz Sánchez, Av. Oswaldo Guayasamín E3-115, Cumbayá'),
+};
+const servicios = [
+  ['🛢️', 'Cambio de aceite', 'Aceite y filtros según su kilometraje'],
+  ['⚙️', 'Banda de distribución', 'Kit completo, bomba de agua y retenes'],
+  ['🛑', 'Frenos', 'ABC, pastillas, discos y líquido'],
+  ['🔧', 'Mantenimiento preventivo', 'Revisión por kilometraje'],
+  ['🚙', 'Suspensión y dirección', 'Amortiguadores, alineación'],
+  ['⚡', 'Electricidad y diagnóstico', 'Escáner y sistema eléctrico'],
+  ['🔩', 'Embrague', 'Kit de embrague y caja'],
+  ['🌡️', 'Refrigeración', 'Radiador, termostato, bomba'],
+];
+const wa = `https://wa.me/${taller.whatsapp}?text=${encodeURIComponent('Hola, quisiera agendar un turno para mi vehículo.')}`;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AutoRepair',
+  name: taller.nombre,
+  telephone: taller.telefono,
+  email: taller.email,
+  slogan: taller.lema,
+  address: { '@type': 'PostalAddress', streetAddress: 'Av. Oswaldo Guayasamín E3-115 y Manuel Betancourt', addressLocality: 'Cumbayá', addressRegion: 'Pichincha', addressCountry: 'EC' },
+};
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{taller.nombre} · Mecánica automotriz</title>
+    <meta name="description" content="Mantenimiento, diagnóstico y reparación con historial de cada trabajo." />
+    <meta name="theme-color" content="#c8102e" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <header>
+      <b class="logo"><small>MECÁNICA AUTOMOTRIZ</small>SÁNCHEZ</b>
+      <a class="btn wa" href={wa}>💬 WhatsApp</a>
+    </header>
+
+    <section class="hero">
+      <small>SU MECÁNICA DE CONFIANZA · CUMBAYÁ</small>
+      <h1>Su vehículo en manos de expertos, con el historial de cada trabajo</h1>
+      <p>Mantenimiento, diagnóstico y reparación. Sabemos qué se le hizo a su vehículo, cuándo y a qué kilometraje.</p>
+      <a class="btn blanco" href={wa}>💬 Agendar por WhatsApp</a>
+      <a class="btn borde" href={taller.maps}>📍 Cómo llegar</a>
+    </section>
+
+    <section class="sec">
+      <h2>Nuestros servicios</h2>
+      <div class="grid">
+        {servicios.map(([i, t, d]) => <div class="card"><span>{i}</span><b>{t}</b><small>{d}</small></div>)}
+      </div>
+    </section>
+
+    <section class="sec suave">
+      <h2>Ubicación y horario</h2>
+      <p>{taller.direccion}</p>
+      {taller.horario.map((h) => <p>{h}</p>)}
+      <p>📞 {taller.telefono} · ✉️ <a href={`mailto:${taller.email}`}>{taller.email}</a></p>
+    </section>
+
+    <footer>
+      © {new Date().getFullYear()} {taller.nombre} · <a href="https://app.mecanicasanchez.com">Acceso del personal →</a>
+    </footer>
+    <a class="fab" href={wa} aria-label="WhatsApp">💬</a>
+  </body>
+</html>
+
+<style is:global>
+  :root { --rojo: #c8102e; --rojo2: #9e0b23; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; color: #1f2328; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 5vw; border-bottom: 1px solid #eee; }
+  .logo { font-size: 22px; font-weight: 900; letter-spacing: .5px; line-height: 1; border-bottom: 3px solid var(--rojo); padding-bottom: 3px; } .logo small { display: block; font-size: 9px; letter-spacing: 3px; color: #6b7280; }
+  .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; font-weight: 700; text-decoration: none; margin: 4px 6px 4px 0; }
+  .wa { background: #16a34a; color: #fff; } .blanco { background: #fff; color: var(--rojo); } .borde { border: 2px solid #fff; color: #fff; }
+  .hero { background: linear-gradient(120deg, var(--rojo), var(--rojo2)); color: #fff; padding: 64px 5vw; }
+  .hero h1 { font-size: clamp(28px, 5vw, 44px); max-width: 760px; margin: 10px 0; line-height: 1.1; }
+  .hero p { font-size: 18px; max-width: 640px; opacity: .92; }
+  .sec { padding: 56px 5vw; } .suave { background: #fdeaec; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .card span { font-size: 26px; } .card small { color: #6b7280; }
+  footer { padding: 18px 5vw; color: #6b7280; } footer a { color: var(--rojo); font-weight: 700; }
+  .fab { position: fixed; right: 22px; bottom: 22px; width: 58px; height: 58px; border-radius: 50%; background: #16a34a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; text-decoration: none; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+</style>

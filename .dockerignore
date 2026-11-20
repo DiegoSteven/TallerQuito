@@ -1,0 +1,18 @@
+# Las dependencias se instalan dentro de la imagen; las de Windows no sirven en Linux.
+**/node_modules
+**/dist
+**/.astro
+**/coverage
+**/*.log
+
+# Secretos y datos locales
+**/.env
+**/.env.*
+!**/.env.example
+backups
+infra/backup/rclone.conf
+
+# Nada de esto hace falta para construir
+.git
+.github
+docs

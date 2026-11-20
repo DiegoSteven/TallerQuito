@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* Colores del taller: blanco y rojo */
+@theme {
+  --color-marca: #c8102e;
+  --color-marca-oscuro: #9e0b23;
+  --color-marca-suave: #fdeaec;
+  --color-tinta: #1f2328;
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  @apply bg-gray-50 text-tinta antialiased;
+}
+
+.placa {
+  @apply inline-block rounded border-2 border-tinta bg-white px-2 font-extrabold tracking-wider;
+}

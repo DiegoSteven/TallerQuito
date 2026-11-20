@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mecánica Automotriz Sánchez — Visión final</title>
+<style>
+:root{
+  --red:#c8102e; --red-dark:#9e0b23; --red-soft:#fdeaec; --red-line:#f5c2c9;
+  --ink:#1f2328; --muted:#6b7280; --line:#e5e7eb; --bg:#f6f7f9;
+  --ok:#15803d; --ok-soft:#e7f6ec; --warn:#b45309; --warn-soft:#fff4dc; --due:#b91c1c; --due-soft:#fde8e8;
+  --info:#3730a3; --info-soft:#eef2ff; --wa:#16a34a; --gray:#9ca3af;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:14.5px;line-height:1.45}
+button{font:inherit;cursor:pointer}
+.hidden{display:none!important}
+.banner{position:sticky;top:0;z-index:60;background:linear-gradient(90deg,#111,#2a0a10);color:#fff;font-size:13px;display:flex;gap:10px;align-items:center;padding:7px 16px;flex-wrap:wrap}
+.banner b{color:#ff8b99}
+.banner .sp{flex:1}
+
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:8px 14px;font-weight:600;background:var(--red);color:#fff;white-space:nowrap}
+.btn:hover{background:var(--red-dark)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--bg)}
+.btn.wa{background:var(--wa)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.ok{background:var(--ok-soft);color:var(--ok)} .warn{background:var(--warn-soft);color:var(--warn)} .due{background:var(--due-soft);color:var(--due)} .info{background:var(--info-soft);color:var(--info)} .gray{background:#f3f4f6;color:#4b5563} .redt{background:var(--red-soft);color:var(--red)}
+.plate{display:inline-block;border:2px solid var(--ink);border-radius:5px;padding:0 7px;font-weight:800;letter-spacing:.05em;background:#fff;font-size:12.5px}
+
+.app{display:flex;min-height:calc(100vh - 34px)}
+.sb{width:236px;background:#fff;border-right:1px solid var(--line);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:34px;height:calc(100vh - 34px);overflow:auto}
+.logo{font-weight:900;font-size:19px;padding:16px 20px 12px;border-bottom:1px solid var(--line)}
+.logo span{color:var(--red)} .logo small{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.sb .grp{font-size:10.5px;letter-spacing:.1em;color:var(--gray);font-weight:700;padding:14px 20px 4px}
+.sb a{display:flex;align-items:center;gap:10px;padding:8px 20px;color:#374151;font-weight:600;cursor:pointer;border-left:3px solid transparent;text-decoration:none}
+.sb a:hover{background:var(--bg)}
+.sb a.on{background:var(--red-soft);color:var(--red);border-left-color:var(--red)}
+.sb a .ph{margin-left:auto;font-size:10px;font-weight:700;color:var(--muted);background:var(--bg);border-radius:10px;padding:1px 7px}
+.main{flex:1;min-width:0}
+.top{display:flex;align-items:center;gap:12px;padding:12px 24px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:34px;z-index:20}
+.top input{flex:1;max-width:460px;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--bg)}
+.top .bell{position:relative;font-size:18px;background:none;border:none}
+.top .bell i{position:absolute;top:-3px;right:-5px;background:var(--red);color:#fff;font-size:10px;font-style:normal;border-radius:10px;padding:0 5px}
+.burger{display:none;background:none;border:none;font-size:22px}
+.content{padding:22px 24px;max-width:1280px}
+.h1{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.h1 h1{font-size:23px;margin:0} .h1 p{margin:2px 0 0;color:var(--muted)}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 10px;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{color:var(--muted);font-size:12.5px;font-weight:600}
+.kpi .v{font-size:26px;font-weight:800;margin:2px 0}
+.kpi .d{font-size:12px}
+.up{color:var(--ok)} .down{color:var(--due)}
+.g2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.g2e{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px;border-bottom:1px solid var(--line)}
+.r{text-align:right}
+
+/* Kanban */
+.kb{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:12px;overflow-x:auto}
+.col{background:var(--bg);border-radius:10px;padding:10px;min-height:150px}
+.col h4{margin:0 0 8px;font-size:12.5px;display:flex;justify-content:space-between;color:#374151}
+.col h4 span{background:#fff;border-radius:10px;padding:0 7px;font-size:11px}
+.kc{background:#fff;border:1px solid var(--line);border-left:4px solid var(--red);border-radius:8px;padding:9px;margin-bottom:8px;font-size:12.5px}
+.kc .t{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.kc .w{color:var(--muted)}
+.kc .f{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.kc button{background:var(--red-soft);color:var(--red);border:none;border-radius:6px;padding:2px 8px;font-weight:700;font-size:12px}
+
+/* Charts */
+.chart{display:flex;align-items:flex-end;gap:12px;height:190px;padding:8px 4px 0}
+.chart .m{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;font-size:11.5px;color:var(--muted)}
+.chart .bs{display:flex;gap:3px;align-items:flex-end;width:100%;height:100%}
+.chart .bs i{flex:1;border-radius:5px 5px 0 0;display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.hb{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}
+.hb span{width:150px;flex-shrink:0}
+.hb div{flex:1;background:var(--bg);border-radius:6px;height:12px;overflow:hidden}
+.hb i{display:block;height:100%;background:var(--red)}
+.feed>div{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.feed>div>div{display:block}
+.feed>div:last-child{border:none}
+.feed .ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg)}
+.feed small{color:var(--muted);display:block}
+
+/* Order */
+.stepper{display:flex;gap:0;margin-bottom:16px;overflow-x:auto}
+.stepper div{flex:1;min-width:110px;text-align:center;font-size:12px;font-weight:700;color:var(--gray);position:relative;padding-top:26px}
+.stepper div:before{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:#e5e7eb;z-index:1}
+.stepper div:after{content:"";position:absolute;top:13px;left:-50%;width:100%;height:3px;background:#e5e7eb}
+.stepper div:first-child:after{display:none}
+.stepper div.done{color:var(--ink)} .stepper div.done:before,.stepper div.done:after{background:var(--red)}
+.stepper div.cur{color:var(--red)} .stepper div.cur:before{background:#fff;border:4px solid var(--red);width:18px;height:18px;top:5px} .stepper div.cur:after{background:var(--red)}
+.side .blk{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px;background:#fff}
+.side .blk h4{margin:0 0 8px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center}
+.mono{font-family:Consolas,monospace;font-size:11.5px;color:var(--muted);word-break:break-all}
+.tot td{border:none;padding:4px 9px}
+.tot tr:last-child td{font-size:18px;font-weight:800;border-top:2px solid var(--ink);padding-top:8px}
+
+/* Automations */
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0}
+.flow span{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:600}
+.flow span.tr{background:var(--red-soft);border-color:var(--red-line);color:var(--red)}
+.flow b{color:var(--gray)}
+.tog{width:40px;height:22px;border-radius:20px;background:#d1d5db;position:relative;border:none;flex-shrink:0}
+.tog:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+.tog.on{background:var(--ok)} .tog.on:after{left:21px}
+.astat{display:flex;gap:16px;font-size:12px;color:var(--muted)}
+
+/* Phones */
+.phones{display:flex;gap:26px;flex-wrap:wrap;justify-content:center}
+.phone{width:270px;border:10px solid #111;border-radius:34px;overflow:hidden;background:#fff;box-shadow:0 20px 40px rgba(0,0,0,.18);flex-shrink:0}
+.phone .bar{height:22px;background:#111;display:flex;justify-content:center}.phone .bar i{width:90px;height:16px;background:#000;border-radius:0 0 12px 12px}
+.phone .hd{background:var(--red);color:#fff;padding:12px 14px;font-weight:700}
+.phone .hd small{display:block;font-weight:400;opacity:.85}
+.phone .bd{padding:12px;min-height:440px;background:var(--bg);font-size:13px}
+.phone .it{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}
+.phone .nav{display:flex;justify-content:space-around;border-top:1px solid var(--line);padding:8px 0;font-size:18px;background:#fff}
+.chk{display:flex;gap:8px;align-items:center;padding:4px 0}
+.chk i{width:16px;height:16px;border-radius:4px;border:2px solid var(--red);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;color:#fff}
+.chk i.y{background:var(--red)}
+.wa .hd{background:#075e54}
+.wa .bd{background:#e5ddd5}
+.bub{background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:8px;max-width:92%;font-size:12.5px;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.bub.me{background:#dcf8c6;margin-left:auto}
+.bub small{display:block;text-align:right;color:var(--muted);font-size:10px}
+.paybtn{display:block;text-align:center;background:#7b2cbf;color:#fff;border-radius:8px;padding:6px;margin-top:6px;font-weight:700}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:14px}
+.note{font-size:12.5px;color:var(--muted)}
+
+@media (max-width:980px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .g2,.g2e,.g3{grid-template-columns:1fr}
+  .sb{position:fixed;left:0;z-index:50;transform:translateX(-100%);transition:.2s;box-shadow:0 0 30px rgba(0,0,0,.2)}
+  .sb.open{transform:none}
+  .burger{display:block}
+  .content{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="banner"><span>🚀 <b>Visión final</b> · así podría quedar el sistema con todas las fases integradas · <u>no es parte del entregable 1</u></span><span class="sp"></span><span>Datos de ejemplo</span></div>
+
+<div class="app">
+  <aside class="sb" id="sb">
+    <div class="logo">MECÁNICA <span>SÁNCHEZ</span><small>SISTEMA DE GESTIÓN</small></div>
+    <div id="menu"></div>
+    <div class="note" style="padding:14px 20px;margin-top:auto;border-top:1px solid var(--line)">👤 <b>Luis</b> · Dueño</div>
+  </aside>
+  <div class="main">
+    <div class="top">
+      <button class="burger" onclick="document.getElementById('sb').classList.toggle('open')">☰</button>
+      <input placeholder="Buscar placa, cliente, factura, repuesto…">
+      <span style="flex:1"></span>
+      <button class="bell" onclick="go('auto')">🔔<i>4</i></button>
+      <button class="btn sm" onclick="go('orden')">+ Nueva orden</button>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const M=[
+ ['','OPERACIÓN'],
+ ['panel','📊','Panel del taller'],['orden','🧾','Orden de trabajo'],['historial','🚗','Historial'],
+ ['','NEGOCIO'],
+ ['bodega','📦','Bodega','F2'],['facturas','🧾','Facturación SRI','F3'],['pagos','💳','Pagos','Extra'],['finanzas','📈','Finanzas','F4'],
+ ['','AUTOMATIZACIÓN'],
+ ['auto','⚡','Automatizaciones','n8n'],['movil','📱','App móvil','Extra'],
+];
+let view='panel';
+function go(v){ view=v; $('menu').innerHTML=M.map(m=>m[0]===''?`<div class="grp">${m[1]}</div>`:`<a class="${m[0]===v?'on':''}" onclick="go('${m[0]}')">${m[1]} ${m[2]}${m[3]?`<span class="ph">${m[3]}</span>`:''}</a>`).join('');
+  $('content').innerHTML=V[v](); $('sb').classList.remove('open'); window.scrollTo(0,0); }
+function toast(t){ $('toast').innerHTML=`<div class="toast">${t}</div>`; clearTimeout(window._t); window._t=setTimeout(()=>$('toast').innerHTML='',3000); }
+
+/* ---------- Tablero (kanban) ---------- */
+const COLS=['Recibido','Diagnóstico','En reparación','Listo','Entregado'];
+let JOBS=[
+ {p:'PBA-1234',v:'Chevrolet D-Max',w:'Banda de distribución',m:'Pedro',s:2,t:'$401'},
+ {p:'PCQ-0938',v:'Kia Sportage',w:'Pastillas de freno',m:'Andrés',s:1,t:'—'},
+ {p:'GSD-4471',v:'Toyota Hilux',w:'Cambio de aceite',m:'Pedro',s:3,t:'$38'},
+ {p:'GBL-3345',v:'Chevrolet NHR',w:'Mantenimiento flota',m:'Luis',s:2,t:'$128'},
+ {p:'PDF-2210',v:'Mazda BT-50',w:'Revisión de ruido',m:'Andrés',s:0,t:'—'},
+ {p:'PBA-1290',v:'Hyundai Tucson',w:'Suspensión',m:'Pedro',s:4,t:'$145'},
+ {p:'PBC-7781',v:'Suzuki G. Vitara',w:'Cambio de aceite',m:'Luis',s:0,t:'—'},
+];
+function mv(i){ const j=JOBS[i]; if(j.s>=4) return; j.s++;
+  if(j.s===3) toast(`⚡ n8n: WhatsApp enviado al dueño de ${j.p}: "Su vehículo está listo"`);
+  else if(j.s===4) toast(`🧾 Factura autorizada por el SRI y 💳 link de pago enviado · ${j.p}`);
+  else toast(`${j.p} → ${COLS[j.s]}`);
+  $('kb').innerHTML=kanban(); }
+function kanban(){ return COLS.map((c,ci)=>{ const js=JOBS.map((j,i)=>[j,i]).filter(x=>x[0].s===ci);
+  return `<div class="col"><h4>${c}<span>${js.length}</span></h4>${js.map(([j,i])=>`<div class="kc" style="border-left-color:${['#9ca3af','#b45309','#c8102e','#15803d','#3730a3'][ci]}">
+  <div class="t"><span class="plate">${j.p}</span><b>${j.t}</b></div><div>${j.v}</div><div class="w">${j.w}</div>
+  <div class="f"><span class="note">🔧 ${j.m}</span>${ci<4?`<button onclick="mv(${i})" title="Avanzar">→</button>`:'<span class="tag ok">Pagado</span>'}</div></div>`).join('')}</div>`; }).join(''); }
+
+/* ---------- Charts ---------- */
+const MES=['Jun','Jul','Ago','Sep','Oct','Nov'], ING=[6200,7100,6800,7900,8100,8420], GAS=[4100,4500,4300,4900,5000,5150];
+function chart(){ const mx=Math.max(...ING); return `<div class="chart">${MES.map((m,i)=>`<div class="m"><div class="bs"><i style="height:${ING[i]/mx*100}%;background:var(--red)" title="Ingresos $${ING[i]}"></i><i style="height:${GAS[i]/mx*100}%;background:#d1d5db" title="Gastos $${GAS[i]}"></i></div>${m}</div>`).join('')}</div>
+<div class="legend"><span><i style="background:var(--red)"></i>Ingresos</span><span><i style="background:#d1d5db"></i>Gastos</span></div>`; }
+const hb=(rows,fmt)=>{const mx=Math.max(...rows.map(r=>r[1]));return rows.map(r=>`<div class="hb"><span>${r[0]}</span><div><i style="width:${r[1]/mx*100}%"></i></div><b>${fmt?fmt(r[1]):r[1]}</b></div>`).join('')};
+const $f=n=>'$'+String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+
+/* ---------- Vistas ---------- */
+const V={
+panel:()=>`
+<div class="h1"><div><h1>Panel del taller</h1><p>Miércoles 19 de noviembre de 2026 · todo el negocio en una pantalla</p></div>
+<div style="display:flex;gap:8px"><button class="btn ghost sm">Hoy</button><button class="btn ghost sm">Semana</button><button class="btn sm">Mes</button></div></div>
+<div class="kpis">
+ <div class="kpi"><div class="l">Ingresos del mes</div><div class="v">$8.420</div><div class="d up">▲ 4% vs octubre</div></div>
+ <div class="kpi"><div class="l">Utilidad del mes</div><div class="v">$3.270</div><div class="d up">Margen 38,8%</div></div>
+ <div class="kpi"><div class="l">Por cobrar</div><div class="v" style="color:var(--warn)">$1.180</div><div class="d">6 órdenes · 2 vencidas</div></div>
+ <div class="kpi"><div class="l">Repuestos con stock bajo</div><div class="v" style="color:var(--red)">5</div><div class="d"><a href="#" onclick="go('bodega');return false">Ver bodega →</a></div></div>
+</div>
+<div class="card"><h3>🔧 Vehículos en el taller <span class="note">Use → para avanzar el estado: al pasar a "Listo" se avisa al cliente y al entregar se factura y se cobra.</span></h3><div class="kb" id="kb">${kanban()}</div></div>
+<div class="g2">
+ <div class="card"><h3>Ingresos vs gastos <span class="note">últimos 6 meses</span></h3>${chart()}</div>
+ <div class="card"><h3>Actividad automática</h3><div class="feed">
+  <div><span class="ic">💳</span><div><b>Pago recibido · Deuna!</b> $145,00 · OT-1604 PBA-1290<small>hace 12 min · orden marcada como pagada</small></div></div>
+  <div><span class="ic">🧾</span><div><b>Factura 001-001-000214 autorizada</b> por el SRI<small>hace 14 min · enviada por correo y WhatsApp</small></div></div>
+  <div><span class="ic">💬</span><div><b>Recordatorio enviado</b> a Ana Torres: pastillas de freno<small>hoy 09:00 · n8n</small></div></div>
+  <div><span class="ic">📦</span><div><b>Stock bajo:</b> filtro de aceite PH-3614 (2 unidades)<small>hoy 08:31 · aviso al dueño</small></div></div>
+  <div><span class="ic">📅</span><div><b>Turno agendado</b> desde la página web · Jorge Paredes<small>ayer 18:20</small></div></div>
+ </div></div>
+</div>
+<div class="g3">
+ <div class="card"><h3>Servicios más vendidos</h3>${hb([['Cambio de aceite',42],['Frenos (ABC)',18],['Alineación',15],['Banda distribución',6],['Suspensión',5]])}</div>
+ <div class="card"><h3>Ingresos por mecánico</h3>${hb([['Pedro',3650],['Andrés',2890],['Luis',1880]],$f)}</div>
+ <div class="card"><h3>Mantenimientos que tocan</h3>${hb([['Esta semana',9],['Este mes',23],['Vencidos',8]])}<button class="btn ghost sm" style="margin-top:6px" onclick="go('auto')">Ver recordatorios automáticos</button></div>
+</div>`,
+
+orden:()=>`
+<div class="h1"><div><h1>OT-1610 · <span class="plate" style="font-size:16px">PBA-1234</span> Chevrolet D-Max 2016</h1><p>Carlos Andrade · 099 123 4567 · Ingreso 19/11/2026 08:15 · 151.020 km · Mecánico: Pedro</p></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" onclick="toast('📄 PDF de la orden generado')">📄 PDF</button><button class="btn wa" onclick="toast('⚡ n8n: WhatsApp enviado · Su vehículo está listo')">💬 Avisar al cliente</button><button class="btn" onclick="toast('🧾 Enviando factura al SRI… autorizada ✅')">🧾 Facturar</button></div></div>
+<div class="card"><div class="stepper"><div class="done">Recibido</div><div class="done">Diagnóstico</div><div class="done">Aprobado</div><div class="cur">En reparación</div><div>Listo</div><div>Facturado</div><div>Pagado</div></div></div>
+<div class="g2">
+ <div>
+  <div class="card"><h3>Trabajos y repuestos <span class="note">Los repuestos salen de bodega y descuentan stock</span></h3><div class="tw"><table>
+   <tr><th>Servicio</th><th>Detalle</th><th>Bodega</th><th class="r">Cant.</th><th class="r">P. unit.</th><th class="r">Total</th></tr>
+   <tr><td>Banda de distribución</td><td>Mano de obra</td><td>—</td><td class="r">1</td><td class="r">$120,00</td><td class="r">$120,00</td></tr>
+   <tr><td>Banda de distribución</td><td>Kit Gates K015688XS</td><td><span class="tag ok">Stock 3</span></td><td class="r">1</td><td class="r">$145,00</td><td class="r">$145,00</td></tr>
+   <tr><td>Bomba de agua</td><td>Bomba GMB GWIS-47A</td><td><span class="tag warn">Stock 1</span></td><td class="r">1</td><td class="r">$58,00</td><td class="r">$58,00</td></tr>
+   <tr><td>Retén del cigüeñal</td><td>Retén delantero</td><td><span class="tag ok">Stock 12</span></td><td class="r">1</td><td class="r">$12,00</td><td class="r">$12,00</td></tr>
+   <tr><td>Refrigeración</td><td>Refrigerante 1 gal</td><td><span class="tag ok">Stock 9</span></td><td class="r">1</td><td class="r">$14,00</td><td class="r">$14,00</td></tr>
+  </table></div>
+  <table class="tot" style="width:280px;margin:10px 0 0 auto"><tr><td>Subtotal</td><td class="r">$349,00</td></tr><tr><td>IVA 15%</td><td class="r">$52,35</td></tr><tr><td>Total</td><td class="r">$401,35</td></tr></table>
+  <p class="note">Costo de repuestos: $168,40 · <b style="color:var(--ok)">Utilidad estimada de la orden: $180,60</b></p></div>
+  <div class="card"><h3>Historial del vehículo</h3><table>
+   <tr><td>12/09/2026 · 148.300 km</td><td>Cambio de aceite</td><td class="r">$45,00</td></tr>
+   <tr><td>05/01/2025 · 121.700 km</td><td>Pastillas de freno</td><td class="r">$68,00</td></tr>
+   <tr><td>14/03/2022 · 85.000 km</td><td>Kit de distribución</td><td class="r">$320,00</td></tr></table></div>
+ </div>
+ <div class="side">
+  <div class="blk"><h4>🧾 Factura electrónica <span class="tag gray">Pendiente</span></h4><p class="note" style="margin:0 0 8px">Al facturar se genera el XML, se firma y se envía al SRI. El RIDE (PDF) llega al correo del cliente.</p><div class="mono">Clave de acceso: se genera al facturar</div></div>
+  <div class="blk"><h4>💳 Cobro <span class="tag gray">Por cobrar</span></h4>
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" style="background:#7b2cbf" onclick="toast('💳 Link de pago Deuna! enviado por WhatsApp')">Link Deuna!</button><button class="btn sm dark" onclick="toast('💳 Link Payphone enviado')">Payphone</button><button class="btn ghost sm" onclick="toast('💵 Pago en efectivo registrado')">Efectivo</button></div>
+   <p class="note" style="margin:8px 0 0">Cuando el cliente paga, el sistema se entera solo y marca la orden como pagada.</p></div>
+  <div class="blk"><h4>💬 Mensajes al cliente</h4><div class="feed">
+   <div><span class="ic">✅</span><div>Cotización aprobada por el cliente<small>19/11 09:40 · WhatsApp</small></div></div>
+   <div><span class="ic">📷</span><div>Fotos del diagnóstico enviadas<small>19/11 09:10</small></div></div>
+   <div><span class="ic">👋</span><div>Vehículo recibido en el taller<small>19/11 08:16 · automático</small></div></div></div></div>
+  <div class="blk"><h4>📅 Próximo mantenimiento</h4><p style="margin:0">Banda de distribución a los <b>211.000 km</b> o en <b>nov 2030</b>.<br><span class="note">Se le recordará automáticamente.</span></p></div>
+ </div>
+</div>`,
+
+historial:()=>`
+<div class="h1"><div><h1>Historial · <span class="plate" style="font-size:16px">PBA-1234</span> Chevrolet D-Max 2016</h1><p>Carlos Andrade · Km estimado hoy: <b>≈ 151.000</b> (promedio 1.240 km/mes)</p></div><button class="btn ghost">📄 PDF historial</button></div>
+<div class="kpis"><div class="kpi"><div class="l">Visitas</div><div class="v">5</div></div><div class="kpi"><div class="l">Total invertido</div><div class="v">$879</div></div><div class="kpi"><div class="l">Cliente desde</div><div class="v">2019</div></div><div class="kpi"><div class="l">Pagos al día</div><div class="v" style="color:var(--ok)">✔</div></div></div>
+<div class="card"><h3>Línea de tiempo</h3><table><tr><th>Fecha</th><th>Km</th><th>Trabajo</th><th>Factura</th><th>Pago</th><th class="r">Total</th></tr>
+<tr><td>19/11/2026</td><td>151.020</td><td>Kit distribución, bomba de agua</td><td><span class="tag gray">Pendiente</span></td><td><span class="tag warn">Por cobrar</span></td><td class="r">$401,35</td></tr>
+<tr><td>12/09/2026</td><td>148.300</td><td>Cambio de aceite</td><td><span class="tag ok">001-001-000188</span></td><td><span class="tag ok">Deuna!</span></td><td class="r">$45,00</td></tr>
+<tr><td>05/01/2025</td><td>121.700</td><td>Pastillas de freno</td><td><span class="tag ok">001-001-000097</span></td><td><span class="tag ok">Efectivo</span></td><td class="r">$68,00</td></tr>
+<tr><td>14/03/2022</td><td>85.000</td><td>Kit de distribución</td><td><span class="tag gray">Física</span></td><td><span class="tag ok">Efectivo</span></td><td class="r">$320,00</td></tr>
+<tr><td>22/06/2019</td><td>41.200</td><td>Mantenimiento 40.000 km</td><td><span class="tag gray">Física</span></td><td><span class="tag ok">Efectivo</span></td><td class="r">$38,00</td></tr></table></div>`,
+
+bodega:()=>`
+<div class="h1"><div><h1>Bodega</h1><p>Inventario de repuestos · se descuenta solo al usarlos en una orden</p></div><div style="display:flex;gap:8px"><button class="btn ghost" onclick="toast('📥 Entrada de mercadería registrada')">📥 Entrada</button><button class="btn" onclick="toast('📝 Pedido al proveedor generado con los 5 productos en stock bajo')">🛒 Pedir lo que falta</button></div></div>
+<div class="kpis"><div class="kpi"><div class="l">Productos</div><div class="v">214</div></div><div class="kpi"><div class="l">Valor del inventario</div><div class="v">$12.860</div></div><div class="kpi"><div class="l">Stock bajo</div><div class="v" style="color:var(--red)">5</div></div><div class="kpi"><div class="l">Sin movimiento (90 días)</div><div class="v" style="color:var(--warn)">17</div></div></div>
+<div class="g2"><div class="card"><h3>Inventario</h3><div class="tw"><table>
+<tr><th>Código</th><th>Producto</th><th>Categoría</th><th class="r">Stock</th><th class="r">Mín.</th><th class="r">Costo</th><th class="r">Precio</th><th>Estado</th></tr>
+<tr><td>PH-3614</td><td>Filtro de aceite Fram</td><td>Filtros</td><td class="r">2</td><td class="r">10</td><td class="r">$4,20</td><td class="r">$8,00</td><td><span class="tag due">Stock bajo</span></td></tr>
+<tr><td>K015688XS</td><td>Kit distribución Gates</td><td>Motor</td><td class="r">3</td><td class="r">2</td><td class="r">$96,00</td><td class="r">$145,00</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>GWIS-47A</td><td>Bomba de agua GMB</td><td>Refrigeración</td><td class="r">1</td><td class="r">2</td><td class="r">$34,00</td><td class="r">$58,00</td><td><span class="tag due">Stock bajo</span></td></tr>
+<tr><td>AC-15W40</td><td>Aceite 15W-40 (galón)</td><td>Lubricantes</td><td class="r">24</td><td class="r">12</td><td class="r">$17,50</td><td class="r">$26,00</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>PF-D1234</td><td>Pastillas delanteras Bosch</td><td>Frenos</td><td class="r">4</td><td class="r">4</td><td class="r">$22,00</td><td class="r">$40,00</td><td><span class="tag warn">En el mínimo</span></td></tr>
+<tr><td>RT-4510</td><td>Retén cigüeñal</td><td>Motor</td><td class="r">12</td><td class="r">4</td><td class="r">$5,00</td><td class="r">$12,00</td><td><span class="tag ok">OK</span></td></tr>
+<tr><td>BJ-IRI4</td><td>Bujías iridium x4</td><td>Encendido</td><td class="r">1</td><td class="r">3</td><td class="r">$28,00</td><td class="r">$48,00</td><td><span class="tag due">Stock bajo</span></td></tr>
+</table></div></div>
+<div class="card"><h3>Movimientos de hoy</h3><div class="feed">
+<div><span class="ic">➖</span><div>Kit distribución Gates −1<small>OT-1610 · PBA-1234</small></div></div>
+<div><span class="ic">➖</span><div>Bomba de agua GMB −1<small>OT-1610 · PBA-1234</small></div></div>
+<div><span class="ic">➕</span><div>Aceite 15W-40 +12<small>Compra a Importadora XYZ · $210,00</small></div></div>
+<div><span class="ic">➖</span><div>Filtro de aceite Fram −1<small>OT-1608 · GSD-4471</small></div></div></div></div></div>`,
+
+facturas:()=>`
+<div class="h1"><div><h1>Facturación electrónica</h1><p>Facturas autorizadas por el SRI, generadas desde la orden de trabajo</p></div><button class="btn" onclick="toast('🧾 Factura autorizada por el SRI ✅')">+ Facturar orden</button></div>
+<div class="kpis"><div class="kpi"><div class="l">Facturado en noviembre</div><div class="v">$8.420</div></div><div class="kpi"><div class="l">IVA cobrado</div><div class="v">$1.098</div></div><div class="kpi"><div class="l">Autorizadas</div><div class="v" style="color:var(--ok)">58</div></div><div class="kpi"><div class="l">Devueltas por el SRI</div><div class="v" style="color:var(--red)">1</div></div></div>
+<div class="card"><div class="tw"><table><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Orden</th><th class="r">Total</th><th>SRI</th><th></th></tr>
+<tr><td>001-001-000214</td><td>19/11/2026</td><td>María Vega</td><td>OT-1604</td><td class="r">$166,75</td><td><span class="tag ok">Autorizada</span></td><td><button class="btn ghost sm">RIDE</button></td></tr>
+<tr><td>001-001-000213</td><td>18/11/2026</td><td>Transportes Andinos S.A.</td><td>OT-1602</td><td class="r">$147,20</td><td><span class="tag ok">Autorizada</span></td><td><button class="btn ghost sm">RIDE</button></td></tr>
+<tr><td>001-001-000212</td><td>18/11/2026</td><td>Jorge Paredes</td><td>OT-1608</td><td class="r">$43,70</td><td><span class="tag info">En proceso</span></td><td><button class="btn ghost sm">RIDE</button></td></tr>
+<tr><td>001-001-000211</td><td>17/11/2026</td><td>Consumidor final</td><td>OT-1599</td><td class="r">$28,75</td><td><span class="tag due">Devuelta · revisar RUC</span></td><td><button class="btn sm">Corregir</button></td></tr>
+<tr><td>001-001-000210</td><td>15/11/2026</td><td>Ana Torres</td><td>OT-1597</td><td class="r">$28,75</td><td><span class="tag ok">Autorizada</span></td><td><button class="btn ghost sm">RIDE</button></td></tr></table></div>
+<p class="note">Firma electrónica del taller · ambiente de producción del SRI · el RIDE se envía solo por correo y WhatsApp.</p></div>`,
+
+pagos:()=>`
+<div class="h1"><div><h1>Pagos</h1><p>Cobros por link (Deuna!, Payphone), transferencia y efectivo, conciliados con cada orden</p></div></div>
+<div class="kpis"><div class="kpi"><div class="l">Cobrado en noviembre</div><div class="v">$7.240</div></div><div class="kpi"><div class="l">Por cobrar</div><div class="v" style="color:var(--warn)">$1.180</div></div><div class="kpi"><div class="l">Tiempo medio de cobro</div><div class="v">1,4 días</div></div><div class="kpi"><div class="l">Pagos por link</div><div class="v">46%</div></div></div>
+<div class="g2"><div class="card"><h3>Últimos pagos</h3><div class="tw"><table><tr><th>Fecha</th><th>Cliente</th><th>Orden</th><th>Método</th><th class="r">Monto</th><th>Estado</th></tr>
+<tr><td>19/11 10:02</td><td>María Vega</td><td>OT-1604</td><td><span class="tag" style="background:#f3e8ff;color:#7b2cbf">Deuna!</span></td><td class="r">$166,75</td><td><span class="tag ok">Confirmado</span></td></tr>
+<tr><td>18/11 17:30</td><td>Transportes Andinos</td><td>OT-1602</td><td><span class="tag info">Transferencia</span></td><td class="r">$147,20</td><td><span class="tag ok">Confirmado</span></td></tr>
+<tr><td>18/11 16:05</td><td>Jorge Paredes</td><td>OT-1608</td><td><span class="tag gray">Payphone</span></td><td class="r">$43,70</td><td><span class="tag ok">Confirmado</span></td></tr>
+<tr><td>17/11 12:40</td><td>Luis Mena</td><td>OT-1600</td><td><span class="tag" style="background:#f3e8ff;color:#7b2cbf">Deuna!</span></td><td class="r">$212,00</td><td><span class="tag warn">Link enviado</span></td></tr>
+<tr><td>17/11 11:15</td><td>Consumidor final</td><td>OT-1599</td><td><span class="tag ok">Efectivo</span></td><td class="r">$28,75</td><td><span class="tag ok">Confirmado</span></td></tr></table></div></div>
+<div class="card"><h3>Por método</h3>${hb([['Efectivo',2630],['Deuna!',2110],['Transferencia',1370],['Payphone',1130]],$f)}<p class="note">Cuando el cliente paga por link, la orden se marca como pagada sin que nadie tenga que revisar el banco.</p></div></div>`,
+
+finanzas:()=>`
+<div class="h1"><div><h1>Finanzas</h1><p>Ingresos, gastos y utilidad real del taller</p></div><button class="btn" onclick="toast('➕ Gasto registrado')">+ Registrar gasto</button></div>
+<div class="kpis"><div class="kpi"><div class="l">Ingresos (nov)</div><div class="v">$8.420</div><div class="d up">▲ 4%</div></div><div class="kpi"><div class="l">Gastos (nov)</div><div class="v">$5.150</div><div class="d down">▲ 3%</div></div><div class="kpi"><div class="l">Utilidad (nov)</div><div class="v" style="color:var(--ok)">$3.270</div></div><div class="kpi"><div class="l">Utilidad del año</div><div class="v">$29.840</div></div></div>
+<div class="g2"><div class="card"><h3>Ingresos vs gastos</h3>${chart()}</div>
+<div class="card"><h3>Gastos por categoría (nov)</h3>${hb([['Repuestos',2380],['Sueldos',1800],['Arriendo',450],['Servicios básicos',190],['Herramientas',180],['Otros',150]],$f)}</div></div>
+<div class="card"><h3>Rentabilidad por servicio</h3><div class="tw"><table><tr><th>Servicio</th><th class="r">Veces</th><th class="r">Ingreso</th><th class="r">Costo repuestos</th><th class="r">Utilidad</th><th class="r">Margen</th></tr>
+<tr><td>Cambio de aceite</td><td class="r">42</td><td class="r">$1.680</td><td class="r">$903</td><td class="r">$777</td><td class="r"><span class="tag ok">46%</span></td></tr>
+<tr><td>Frenos (ABC + pastillas)</td><td class="r">18</td><td class="r">$1.440</td><td class="r">$520</td><td class="r">$920</td><td class="r"><span class="tag ok">64%</span></td></tr>
+<tr><td>Banda de distribución</td><td class="r">6</td><td class="r">$1.950</td><td class="r">$1.010</td><td class="r">$940</td><td class="r"><span class="tag ok">48%</span></td></tr>
+<tr><td>Alineación y balanceo</td><td class="r">15</td><td class="r">$375</td><td class="r">$0</td><td class="r">$375</td><td class="r"><span class="tag ok">100%</span></td></tr>
+<tr><td>Suspensión</td><td class="r">5</td><td class="r">$980</td><td class="r">$720</td><td class="r">$260</td><td class="r"><span class="tag warn">27%</span></td></tr></table></div></div>`,
+
+auto:()=>`
+<div class="h1"><div><h1>Automatizaciones</h1><p>Flujos que corren solos con n8n y WhatsApp Business · se activan o apagan con un clic</p></div></div>
+<div class="kpis"><div class="kpi"><div class="l">Mensajes enviados (nov)</div><div class="v">312</div></div><div class="kpi"><div class="l">Clientes que volvieron por un recordatorio</div><div class="v" style="color:var(--ok)">27</div></div><div class="kpi"><div class="l">Horas ahorradas (est.)</div><div class="v">18 h</div></div><div class="kpi"><div class="l">Flujos activos</div><div class="v">6/7</div></div></div>
+<div class="g2e">${[
+ ['📅 Recordatorio de mantenimiento',1,['Todos los días 9:00','Busca servicios que tocan','Mensaje por WhatsApp','Registra en el historial'],'Enviados: 96','Volvieron: 27'],
+ ['✅ Vehículo listo',1,['Orden pasa a "Listo"','WhatsApp con detalle y valor','Link de pago'],'Enviados: 58','Respuesta media: 6 min'],
+ ['🧾 Factura autorizada',1,['SRI autoriza','RIDE por correo','Copia por WhatsApp'],'Enviadas: 58','Errores: 0'],
+ ['💳 Pago recibido',1,['Aviso de Deuna!/Payphone','Marca la orden pagada','Agradece al cliente'],'Pagos: 27','Conciliados: 100%'],
+ ['📦 Stock bajo',1,['Producto bajo el mínimo','Aviso al dueño','Borrador de pedido'],'Alertas: 11','Pedidos: 4'],
+ ['📊 Resumen semanal al dueño',1,['Lunes 8:00','Calcula ventas y utilidad','Envía resumen por WhatsApp'],'Enviados: 4',''],
+ ['⭐ Pedir reseña en Google',0,['2 días después de entregar','Mensaje con link de reseña'],'Apagado','']
+].map((a,i)=>`<div class="card"><h3>${a[0]}<button class="tog ${a[1]?'on':''}" onclick="this.classList.toggle('on');toast(this.classList.contains('on')?'Flujo activado':'Flujo apagado')"></button></h3>
+<div class="flow">${a[2].map((s,j)=>`${j?'<b>→</b>':''}<span class="${j?'':'tr'}">${s}</span>`).join('')}</div><div class="astat"><span>${a[3]}</span><span>${a[4]}</span></div></div>`).join('')}</div>`,
+
+movil:()=>`
+<div class="h1"><div><h1>App móvil y experiencia del cliente</h1><p>App para el equipo del taller y lo que vive el cliente en su WhatsApp</p></div></div>
+<div class="phones">
+ <div><p style="text-align:center;font-weight:700;margin:0 0 8px">🔧 App del mecánico</p><div class="phone"><div class="bar"><i></i></div>
+  <div class="hd">Hola, Pedro<small>3 trabajos asignados hoy</small></div>
+  <div class="bd">
+   <div class="it"><div style="display:flex;justify-content:space-between"><span class="plate">PBA-1234</span><span class="tag redt">En reparación</span></div><b style="display:block;margin-top:6px">Kit de distribución</b><span class="note">D-Max 2016 · 151.020 km</span>
+    <div style="margin-top:8px"><div class="chk"><i class="y">✓</i>Desmontar correa y tensor</div><div class="chk"><i class="y">✓</i>Cambiar bomba de agua</div><div class="chk"><i></i>Instalar kit y sincronizar</div><div class="chk"><i></i>Prueba de ruta</div></div>
+    <div style="display:flex;gap:6px;margin-top:8px"><span class="btn ghost sm">📷 Fotos</span><span class="btn sm">✔ Listo</span></div></div>
+   <div class="it"><div style="display:flex;justify-content:space-between"><span class="plate">GSD-4471</span><span class="tag ok">Listo</span></div><span class="note">Cambio de aceite · Hilux</span></div>
+   <div class="it"><div style="display:flex;justify-content:space-between"><span class="plate">PBA-1290</span><span class="tag gray">En cola</span></div><span class="note">Suspensión · Tucson</span></div>
+  </div><div class="nav">🏠 🔧 📦 👤</div></div></div>
+
+ <div><p style="text-align:center;font-weight:700;margin:0 0 8px">👔 App del dueño</p><div class="phone"><div class="bar"><i></i></div>
+  <div class="hd">Mecánica Automotriz Sánchez<small>Resumen de hoy</small></div>
+  <div class="bd">
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="it"><span class="note">Ingresos hoy</span><div style="font-size:20px;font-weight:800">$612</div></div>
+    <div class="it"><span class="note">En taller</span><div style="font-size:20px;font-weight:800">7</div></div>
+    <div class="it"><span class="note">Por cobrar</span><div style="font-size:20px;font-weight:800;color:var(--warn)">$1.180</div></div>
+    <div class="it"><span class="note">Stock bajo</span><div style="font-size:20px;font-weight:800;color:var(--red)">5</div></div></div>
+   <div class="it"><b>Últimos pagos</b><div class="note" style="margin-top:4px">💳 María Vega · $166,75 · Deuna!<br>🏦 T. Andinos · $147,20 · Transf.</div></div>
+   <div class="it"><b>Necesita aprobación</b><div class="note" style="margin-top:4px">🛒 Pedido de 5 repuestos · $186,00</div><div style="display:flex;gap:6px;margin-top:6px"><span class="btn ghost sm">Ver</span><span class="btn sm">Aprobar</span></div></div>
+  </div><div class="nav">📊 🔧 💳 ⚙️</div></div></div>
+
+ <div><p style="text-align:center;font-weight:700;margin:0 0 8px">📲 Lo que recibe el cliente</p><div class="phone wa"><div class="bar"><i></i></div>
+  <div class="hd">Mecánica Automotriz Sánchez<small>cuenta de empresa</small></div>
+  <div class="bd">
+   <div class="bub">👋 Hola Carlos, recibimos su D-Max <b>PBA-1234</b> a las 08:16 con 151.020 km.<small>08:16</small></div>
+   <div class="bub">🔧 Cotización: kit de distribución + bomba de agua · <b>$401,35</b> (IVA incl.). ¿Aprobamos?<small>09:05</small></div>
+   <div class="bub me">Sí, de una 👍<small>09:40</small></div>
+   <div class="bub">✅ ¡Su vehículo está listo! Puede pagar aquí:<span class="paybtn">Pagar con Deuna!</span><small>15:20</small></div>
+   <div class="bub">🧾 Gracias por su pago. Aquí está su factura electrónica: 📄 RIDE_000215.pdf<small>15:31</small></div>
+   <div class="bub">📅 Su próximo cambio de aceite es a los 156.000 km. Le avisaremos 😉<small>15:31</small></div>
+  </div></div></div>
+</div>`,
+};
+go('panel');
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+# Producción (VPS).  Uso:  docker compose up -d --build
+# Solo Caddy expone puertos (80/443). La base de datos y la API quedan en la red interna.
+
+name: taller
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: ${TZ:-America/Guayaquil}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [interna]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-12h}
+      TZ: ${TZ:-America/Guayaquil}
+      # Solo los usa el seed inicial (docker compose exec api ./node_modules/.bin/prisma db seed)
+      SEED_ADMIN_USER: ${SEED_ADMIN_USER:-luis}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      NUMERO_ORDEN_INICIAL: ${NUMERO_ORDEN_INICIAL:-}
+    networks: [interna]
+
+  caddy:
+    build:
+      context: .
+      dockerfile: infra/caddy/Dockerfile
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [interna]
+
+  backup:
+    build: ./infra/backup
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGHOST: postgres
+      BACKUP_CRON: ${BACKUP_CRON:-0 3 * * *}
+      BACKUP_REMOTE: ${BACKUP_REMOTE:-}
+      TZ: ${TZ:-America/Guayaquil}
+    volumes:
+      - ./backups:/backups
+      # Carpeta montada completa: si rclone.conf no existe, solo se guarda la copia local.
+      - ./infra/backup:/config/rclone:ro
+    networks: [interna]
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
+
+networks:
+  interna:

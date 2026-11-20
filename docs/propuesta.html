@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta — Sistema de Historial Vehicular</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+  :root{
+    --ink:#1b2430; --muted:#5b6675; --line:#d9dee5; --soft:#f3f5f8;
+    --brand:#c8102e; --brand-soft:#fdeaec; --blue:#1d4ed8; --blue-soft:#e8efff;
+    --green:#15803d; --green-soft:#e7f6ec; --amber:#b45309; --amber-soft:#fff6e0;
+    --red:#b91c1c; --red-soft:#fdecec;
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",Arial,sans-serif;color:var(--ink);font-size:10pt;line-height:1.4;margin:0;background:#fff}
+  h1{font-size:26pt;margin:0 0 6px;line-height:1.1}
+  h2{font-size:15pt;margin:0 0 10px;padding-bottom:6px;border-bottom:2px solid var(--brand);color:var(--ink)}
+  h3{font-size:11pt;margin:12px 0 5px}
+  p{margin:0 0 8px}
+  .page{page-break-after:always}
+  .page:last-child{page-break-after:auto}
+  .num{color:var(--brand);margin-right:6px}
+  .muted{color:var(--muted)}
+  .small{font-size:9pt}
+  table{width:100%;border-collapse:collapse;margin:6px 0 10px;font-size:9.5pt}
+  th,td{border:1px solid var(--line);padding:4px 7px;text-align:left;vertical-align:top}
+  th{background:var(--soft);font-weight:600}
+  .callout{border-left:4px solid var(--brand);background:var(--brand-soft);padding:8px 12px;margin:10px 0;border-radius:0 6px 6px 0}
+  .callout.blue{border-color:var(--blue);background:var(--blue-soft)}
+  .callout.green{border-color:var(--green);background:var(--green-soft)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .card h4{margin:0 0 6px;font-size:10.5pt}
+  ul{margin:3px 0 6px;padding-left:18px} li{margin:1px 0}
+  .tag{display:inline-block;font-size:8pt;padding:1px 7px;border-radius:10px;font-weight:600}
+  .tag.ok{background:var(--green-soft);color:var(--green)}
+  .tag.warn{background:var(--amber-soft);color:var(--amber)}
+  .tag.due{background:var(--red-soft);color:var(--red)}
+  .tag.info{background:var(--blue-soft);color:var(--blue)}
+
+  /* Portada */
+  .cover{height:255mm;display:flex;flex-direction:column;justify-content:space-between}
+  .cover .band{background:linear-gradient(120deg,#c8102e,#9e0b23);color:#fff;padding:34px 30px;border-radius:10px}
+  .cover .band .kicker{color:#ffd5db;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:9.5pt}
+  .cover .band p{color:#ffe9ec;font-size:12pt;margin-top:10px}
+  .cover .meta td{border:none;padding:4px 0;font-size:10.5pt}
+  .cover .meta td:first-child{color:var(--muted);width:160px}
+
+  /* Diagramas */
+  .arch{border:2px dashed #9aa6b5;border-radius:10px;padding:12px;position:relative;margin-top:8px}
+  .arch .lbl{position:absolute;top:-10px;left:14px;background:#fff;padding:0 6px;font-weight:700;font-size:9pt;color:var(--muted)}
+  .row{display:flex;gap:10px;align-items:center}
+  .box{border:1.5px solid var(--ink);border-radius:7px;padding:7px 9px;background:#fff;font-size:9pt;text-align:center}
+  .box b{display:block;font-size:9.5pt}
+  .box.c{border-color:var(--blue);background:var(--blue-soft)}
+  .box.d{border-color:var(--green);background:var(--green-soft)}
+  .box.b{border-color:var(--amber);background:var(--amber-soft)}
+  .box.r{border-color:var(--brand);background:var(--brand-soft)}
+  .arrow{font-size:16pt;color:var(--muted);text-align:center}
+  .docker{border:1.5px solid #2496ed;border-radius:8px;padding:10px;background:#f2f9ff;flex:1}
+  .docker .t{font-weight:700;color:#1677c4;font-size:9pt;margin-bottom:6px}
+
+  .er{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+  .ent{border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;font-size:8.6pt}
+  .ent .h{background:var(--ink);color:#fff;padding:4px 8px;font-weight:700}
+  .ent .h.fut{background:#8a94a3}
+  .ent div.f{padding:2px 8px;border-top:1px solid var(--line)}
+  .pk{color:var(--brand);font-weight:700} .fk{color:var(--blue);font-weight:600}
+
+  /* Mockups */
+  .frame{border:1px solid #b9c1cc;border-radius:9px;overflow:hidden;box-shadow:0 2px 0 #e4e8ee;margin:8px 0 6px;background:#fff}
+  .frame .bar{background:#e9edf2;padding:6px 10px;display:flex;gap:6px;align-items:center;font-size:8pt;color:var(--muted)}
+  .dot{width:9px;height:9px;border-radius:50%;background:#c9cfd8;display:inline-block}
+  .url{background:#fff;border-radius:5px;padding:2px 10px;margin-left:8px;flex:1}
+  .app{display:flex;font-size:8.6pt;min-height:100px}
+  .side{width:120px;background:#fff;color:#374151;padding:10px 0;border-right:1px solid var(--line)}
+  .side .logo{color:var(--ink);font-weight:700;padding:0 12px 10px;font-size:10pt}
+  .side .logo span{color:var(--brand)}
+  .side div.i{padding:6px 12px}
+  .side div.i.on{background:var(--brand-soft);color:var(--brand);border-left:3px solid var(--brand);font-weight:600}
+  .main{flex:1;padding:12px 14px;background:#f7f8fa}
+  .search{display:flex;gap:6px;margin-bottom:10px}
+  .search .in{flex:1;border:1.5px solid var(--brand);background:#fff;border-radius:6px;padding:7px 10px;font-size:10pt}
+  .btn{background:var(--brand);color:#fff;border-radius:6px;padding:6px 12px;font-weight:600;display:inline-block}
+  .btn.g{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:6px;padding:7px 9px}
+  .kpi .v{font-size:14pt;font-weight:700}
+  .kpi .l{color:var(--muted);font-size:7.8pt}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+  .panel .pt{font-weight:700;margin-bottom:5px;font-size:9pt}
+  .panel table{font-size:8.2pt;margin:0}
+  .panel th,.panel td{padding:3px 6px}
+  .vhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+  .plate{display:inline-block;border:2px solid var(--ink);border-radius:4px;padding:1px 8px;font-weight:800;letter-spacing:.06em;background:#fff;font-size:11pt}
+  .tl{position:relative;padding-left:16px}
+  .tl:before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .ev{position:relative;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 9px;margin-bottom:6px}
+  .ev:before{content:"";position:absolute;left:-15px;top:9px;width:9px;height:9px;border-radius:50%;background:var(--brand);border:2px solid #fff;box-shadow:0 0 0 1px var(--brand)}
+  .ev .top{display:flex;justify-content:space-between;font-weight:700}
+  .ev .top span{font-weight:400;color:var(--muted)}
+  .hl{background:#fff4a8;padding:0 2px}
+  .form{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px 10px}
+  .fld .l{font-size:7.8pt;color:var(--muted);margin-bottom:2px}
+  .fld .v{background:#fff;border:1px solid #c5ccd6;border-radius:5px;padding:4px 7px;min-height:22px}
+  .chips span{display:inline-block;border:1px solid var(--line);background:#fff;border-radius:12px;padding:1px 8px;margin:2px 3px 0 0;font-size:7.8pt}
+  .phone{width:205px;border:7px solid #1b2430;border-radius:22px;overflow:hidden;background:#f7f8fa;font-size:8pt}
+  .phone .ph{background:var(--brand);color:#fff;padding:8px 10px;font-weight:700}
+  .phone .pb{padding:8px}
+  .wa{background:#e5ddd5;padding:10px;border-radius:0 0 14px 14px}
+  .bubble{background:#dcf8c6;border-radius:8px;padding:6px 8px;margin-bottom:6px;font-size:8pt}
+  .bubble.in{background:#fff}
+  .pdfdoc{border:1px solid var(--line);background:#fff;padding:12px 14px;font-size:8.2pt}
+  .caption{font-size:8.6pt;color:var(--muted);margin-bottom:12px}
+
+  .gantt td{padding:4px 5px;font-size:8.6pt}
+  .gantt td.f{background:var(--brand);}
+  .gantt td.e{background:#fff}
+  .price{font-size:22pt;font-weight:800;color:var(--brand)}
+  .sign{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:22px}
+  .sign div{border-top:1px solid var(--ink);padding-top:5px;text-align:center;font-size:9.5pt}
+</style>
+</head>
+<body>
+
+<!-- ============ PORTADA ============ -->
+<section class="page cover">
+  <div>
+    <div class="band">
+      <div class="kicker">Propuesta técnica · Entregable 1</div>
+      <h1>Sistema de Historial<br>de Mantenimiento Vehicular</h1>
+      <p>Digitalización del historial de trabajos del taller: buscar por placa y saber en segundos qué se le hizo a cada vehículo, cuándo y a qué kilometraje.</p>
+    </div>
+    <table class="meta" style="margin-top:28px;width:auto">
+      <tr><td>Cliente</td><td>Mecánica Automotriz Sánchez</td></tr>
+      <tr><td>Preparado por</td><td>Diego Hidalgo</td></tr>
+      <tr><td>Fecha</td><td>19 de noviembre de 2026</td></tr>
+      <tr><td>Versión</td><td>1.0 — borrador para revisión</td></tr>
+    </table>
+  </div>
+  <div>
+    <h3>Contenido</h3>
+    <table class="small" style="width:70%">
+      <tr><td>1. Problema y objetivo</td><td>6. Diseño del sistema</td></tr>
+      <tr><td>2. Alcance del entregable 1</td><td>7. Landing page del taller</td></tr>
+      <tr><td>3. Arquitectura y tecnologías</td><td>8. Cronograma</td></tr>
+      <tr><td>4. Modelo de datos</td><td>9. Inversión y forma de pago</td></tr>
+      <tr><td>5. Respaldos y seguridad</td><td></td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 1 y 2 ============ -->
+<section class="page">
+  <h2><span class="num">1.</span>Problema y objetivo</h2>
+  <p>Los clientes del taller preguntan con frecuencia por WhatsApp o en persona:</p>
+  <div class="callout blue small">
+    <i>"¿Me puede revisar cuándo fue la última vez y qué kilometraje tenía cuando le cambiamos la banda de distribución a mi camioneta? ¿Y si ya le hizo el cambio del retén del cigüeñal? Avíseme costos."</i><br>
+    <span class="muted">— Mensaje real de un cliente</span>
+  </div>
+  <p>Hoy esa información está en <b>hojas de papel acumuladas durante ~9 años</b>. Encontrar un trabajo antiguo toma mucho tiempo o simplemente no se encuentra, y se pierde la oportunidad de recomendar el siguiente mantenimiento.</p>
+  <div class="grid2">
+    <div class="card"><h4>Objetivo</h4>Escribir la <b>placa</b> o el <b>nombre del cliente</b> y ver al instante la línea de tiempo del vehículo: fecha, kilometraje, trabajos realizados, repuestos y valor cobrado.</div>
+    <div class="card"><h4>Indicador de éxito</h4>Responder una consulta como la de arriba en <b>menos de 1 minuto</b>, y saber qué vehículos están próximos a un mantenimiento.</div>
+  </div>
+
+  <h2 style="margin-top:20px"><span class="num">2.</span>Alcance del entregable 1</h2>
+  <table style="font-size:9pt">
+    <tr><th style="width:55%">✔ Incluido</th><th>✖ No incluido</th></tr>
+    <tr><td>
+      <ul>
+        <li><b>Clientes:</b> nombre, cédula/RUC, teléfono, correo.</li>
+        <li><b>Vehículos:</b> placa, marca, modelo, año, motor, VIN, color. Un cliente puede tener varios.</li>
+        <li><b>Órdenes de trabajo:</b> fecha, kilometraje, mecánico, trabajos, repuestos, observaciones y valor cobrado.</li>
+        <li><b>Catálogo de servicios</b> (banda de distribución, aceite, frenos…) con intervalo recomendado en km/meses.</li>
+        <li><b>Búsqueda</b> por placa, cliente o tipo de servicio.</li>
+        <li><b>Ficha del vehículo</b> con línea de tiempo y "último servicio de cada tipo".</li>
+        <li><b>Recordatorios</b> de mantenimiento por km o fecha.</li>
+        <li><b>PDF del historial</b> para descargar o imprimir.</li>
+        <li><b>Estadísticas simples</b> con filtros.</li>
+        <li><b>Importación desde Excel</b> para cargar el historial antiguo.</li>
+        <li>Usuarios y roles · publicación en la nube con HTTPS · respaldos · capacitación.</li>
+        <li><b>Landing page del taller</b> con dominio propio, botón de WhatsApp y perfil de Google Maps.</li>
+      </ul>
+    </td><td>
+      <ul>
+        <li>Cualquier función que no esté en la columna de la izquierda.</li>
+        <li>App para instalar en el celular: el sistema se usa desde el navegador del celular.</li>
+        <li><b>Digitación de las hojas antiguas</b>: el sistema trae el importador y una plantilla de Excel, pero pasar los datos es trabajo del taller.</li>
+      </ul>
+    </td></tr>
+  </table>
+  <div class="callout small"><b>Decisión de diseño importante:</b> cada trabajo se registra eligiendo un <b>tipo de servicio del catálogo</b> más una nota libre. Así la pregunta "¿cuándo fue la última banda de distribución?" se responde con certeza, sin depender de cómo se escribió ese día ("banda", "kit distrib.", "bnda").</div>
+</section>
+
+<!-- ============ 3 ARQUITECTURA ============ -->
+<section class="page">
+  <h2><span class="num">3.</span>Arquitectura y tecnologías</h2>
+  <p>El sistema vive en un <b>servidor en la nube</b> (VPS) con dominio propio. El dueño y su equipo lo abren desde la PC del taller, desde el celular en la calle o desde la casa, con usuario y contraseña. <b>No hay que comprar ni cuidar un servidor en el taller</b>, y los respaldos se guardan en otro proveedor.</p>
+
+  <div class="row" style="align-items:stretch;gap:10px;margin-top:6px">
+    <div style="width:125px;display:flex;flex-direction:column;gap:6px;justify-content:center">
+      <div class="box c"><b>PC del taller</b>Navegador</div>
+      <div class="box c"><b>Celular del dueño</b>Desde cualquier lugar</div>
+    </div>
+    <div class="arrow" style="align-self:center;font-size:10pt;text-align:center">HTTPS<br>⇄<br><span class="small">internet</span></div>
+    <div class="arch" style="flex:1;margin-top:0;padding-top:16px">
+      <span class="lbl">☁ VPS EN LA NUBE — app.mecanicasanchez.com</span>
+      <div class="docker">
+        <div class="t">🐳 Docker Compose · firewall: solo puertos 80/443</div>
+        <div class="row" style="align-items:stretch">
+          <div class="box" style="flex:1"><b>caddy</b>Web React<br>HTTPS automático</div>
+          <div class="arrow" style="align-self:center">→</div>
+          <div class="box r" style="flex:1.2"><b>api</b>NestJS + Prisma<br>REST · Swagger</div>
+          <div class="arrow" style="align-self:center">→</div>
+          <div class="box d" style="flex:1"><b>postgres</b>PostgreSQL 16<br>red interna</div>
+        </div>
+        <div class="row" style="margin-top:8px;align-items:stretch">
+          <div style="flex:2.4"></div>
+          <div class="box b" style="flex:1"><b>backup</b>Respaldo diario<br>cifrado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="margin-top:8px;gap:10px">
+    <div class="box b" style="flex:1"><b>🗄 Respaldo en otro proveedor</b>Cloudflare R2, cifrado. Si el VPS falla, se restaura en menos de 1 hora.</div>
+    <div class="box b" style="flex:1"><b>💾 Copia en el taller</b>Copia semanal en la PC del taller. Los datos siempre quedan en manos del dueño.</div>
+  </div>
+  <div class="callout blue small" style="margin-top:8px"><b>¿Por qué en la nube?</b> Se puede entrar desde cualquier lugar, no depende de cortes de luz ni de robos en el taller. Si se cae el internet del taller, se trabaja con los datos del celular.</div>
+  <h3>Tecnologías</h3>
+  <table style="font-size:8.8pt">
+    <tr><th style="width:22%">Capa</th><th style="width:28%">Tecnología</th><th>Por qué</th></tr>
+    <tr><td>Backend (API)</td><td>NestJS 10 + TypeScript</td><td>API REST ordenada por módulos y documentada con Swagger.</td></tr>
+    <tr><td>Acceso a datos</td><td>Prisma ORM</td><td>Modelo de datos tipado y migraciones versionadas.</td></tr>
+    <tr><td>Frontend</td><td>React 18 + Vite + TanStack Query + Tailwind / shadcn/ui</td><td>Interfaz moderna y rápida, adaptable al celular.</td></tr>
+    <tr><td>Seguridad</td><td>JWT + roles (dueño, recepción, mecánico)</td><td>Cada usuario ve y hace solo lo que le corresponde.</td></tr>
+    <tr><td>Base de datos</td><td>PostgreSQL 16 + <i>pg_trgm</i></td><td>Robusta y gratuita. Encuentra la placa aunque esté mal escrita ("pba1234").</td></tr>
+    <tr><td>PDF / Excel</td><td>pdfmake · exceljs</td><td>PDF del historial y carga masiva desde una plantilla de Excel.</td></tr>
+    <tr><td>Calidad / CI-CD</td><td>Jest · GitHub Actions</td><td>Pruebas automáticas y despliegue al servidor en cada cambio aprobado.</td></tr>
+    <tr><td>Infraestructura</td><td>Vultr (VPS) + Docker Compose · Cloudflare (dominio, DNS, landing)</td><td>Se despliega con un solo comando. Si el negocio crece, se sube de plan sin tocar el código.</td></tr>
+    <tr><td>Proxy / HTTPS</td><td>Caddy 2 + Let's Encrypt</td><td>Certificado HTTPS gratuito y automático, y además sirve la web y redirige a la API.</td></tr>
+    <tr><td>Respaldos / monitoreo</td><td>pg_dump + rclone → Cloudflare R2 · UptimeRobot</td><td>Copias diarias cifradas en otro proveedor y aviso automático si el sistema se cae.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 5 MODELO + 6 RESPALDOS ============ -->
+<section class="page">
+  <h2><span class="num">4.</span>Modelo de datos</h2>
+  <p class="small muted"><span class="pk">PK</span> clave principal · <span class="fk">FK</span> referencia a otra tabla.</p>
+  <div class="er">
+    <div class="ent"><div class="h">clientes</div>
+      <div class="f"><span class="pk">PK</span> id</div><div class="f">nombre</div><div class="f">cedula_ruc</div><div class="f">telefono · email</div><div class="f">direccion</div><div class="f">notas</div></div>
+    <div class="ent"><div class="h">vehiculos</div>
+      <div class="f"><span class="pk">PK</span> id</div><div class="f"><span class="fk">FK</span> cliente_id</div><div class="f">placa (única)</div><div class="f">marca · modelo · año</div><div class="f">motor · vin · color</div><div class="f">km_actual</div></div>
+    <div class="ent"><div class="h">tipos_servicio</div>
+      <div class="f"><span class="pk">PK</span> id</div><div class="f">nombre (ej. Banda distribución)</div><div class="f">categoria</div><div class="f">intervalo_km</div><div class="f">intervalo_meses</div><div class="f">activo</div></div>
+    <div class="ent"><div class="h">ordenes_trabajo</div>
+      <div class="f"><span class="pk">PK</span> id · numero</div><div class="f"><span class="fk">FK</span> vehiculo_id</div><div class="f"><span class="fk">FK</span> mecanico_id</div><div class="f">fecha · kilometraje</div><div class="f">motivo · observaciones</div><div class="f">total · estado</div></div>
+    <div class="ent"><div class="h">orden_items</div>
+      <div class="f"><span class="pk">PK</span> id</div><div class="f"><span class="fk">FK</span> orden_id</div><div class="f"><span class="fk">FK</span> tipo_servicio_id</div><div class="f">tipo: mano de obra / repuesto</div><div class="f">descripcion · cantidad · precio</div></div>
+    <div class="ent"><div class="h">usuarios</div>
+      <div class="f"><span class="pk">PK</span> id</div><div class="f">nombre · usuario</div><div class="f">rol: dueño / recepción / mecánico</div><div class="f">activo</div></div>
+  </div>
+  <p class="small" style="margin-top:8px"><b>Relaciones:</b> un cliente tiene muchos vehículos · un vehículo tiene muchas órdenes · una orden tiene muchos ítems · cada ítem puede ser de un tipo de servicio. Los <b>recordatorios</b> se calculan: último ítem de cada tipo de servicio + intervalo recomendado, comparado con el km y la fecha actuales.</p>
+  <div class="callout small"><b>Clave del diseño:</b> cada orden guarda la fecha y el kilometraje, y cada trabajo apunta a un tipo de servicio del catálogo. Con eso el sistema responde al instante "¿cuándo y a qué kilometraje se hizo?" y calcula el próximo mantenimiento.</div>
+
+  <h2 style="margin-top:18px"><span class="num">5.</span>Respaldos y seguridad</h2>
+  <table>
+    <tr><th style="width:28%">Riesgo</th><th>Medida</th></tr>
+    <tr><td>Falla del servidor</td><td>Respaldo automático diario. Se guardan 7 diarios, 4 semanales y 12 mensuales, y se restaura en otro VPS en menos de 1 hora.</td></tr>
+    <tr><td>Pérdida del proveedor</td><td>Regla 3-2-1: base de datos en el VPS, copia cifrada en otro proveedor y copia semanal en la PC del taller.</td></tr>
+    <tr><td>Sin internet en el taller</td><td>Se trabaja con los datos del celular (hotspot). La información nunca se pierde porque está en la nube.</td></tr>
+    <tr><td>Respaldos que no sirven</td><td>Prueba de restauración mensual incluida en el mantenimiento.</td></tr>
+    <tr><td>Acceso no autorizado</td><td>HTTPS obligatorio, contraseñas cifradas (bcrypt), roles, límite de intentos de login, firewall, base de datos sin acceso desde internet, SSH solo con llave y registro de quién creó o modificó cada orden.</td></tr>
+    <tr><td>Datos personales</td><td>Cumplimiento básico de la Ley Orgánica de Protección de Datos Personales: acceso solo para el personal autorizado y los datos son propiedad del taller.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 7 DISEÑO FASE 1 ============ -->
+<section class="page">
+  <h2><span class="num">6.</span>Diseño del sistema</h2>
+  <p>Así se ve y se usa el sistema que se entrega. Junto a este documento va el <b>prototipo navegable</b> (<i>prototipo_fase1.html</i>): se abre en el navegador y tiene la página pública y todas las pantallas del sistema con datos de ejemplo.</p>
+
+  <h3>Recorrido diario (lo que más se usa)</h3>
+  <div class="row small" style="gap:6px;align-items:stretch">
+    <div class="box" style="flex:1"><b>1 · Login</b>usuario y contraseña</div><div class="arrow">→</div>
+    <div class="box r" style="flex:1"><b>2 · Buscar placa</b>pantalla de inicio</div><div class="arrow">→</div>
+    <div class="box r" style="flex:1"><b>3 · Ficha del vehículo</b>historial y próximos servicios</div><div class="arrow">→</div>
+    <div class="box r" style="flex:1"><b>4 · Nueva orden</b>trabajos, km y valor</div><div class="arrow">→</div>
+    <div class="box c" style="flex:1"><b>5 · PDF</b>descargar o imprimir el historial</div>
+  </div>
+
+  <h3>Mapa de pantallas</h3>
+  <table style="font-size:9pt">
+    <tr><th style="width:24%">Pantalla</th><th>Para qué sirve</th><th style="width:18%">Quién la usa</th><th style="width:9%">Mockup</th></tr>
+    <tr><td>Login</td><td>Entrar con usuario y contraseña desde cualquier dispositivo.</td><td>Todos</td><td>—</td></tr>
+    <tr><td><b>Inicio / búsqueda</b></td><td>Buscar por placa, cliente o cédula. Indicadores del mes y mantenimientos próximos.</td><td>Todos</td><td>6.1</td></tr>
+    <tr><td><b>Ficha del vehículo</b></td><td>Datos del vehículo y del dueño, último servicio por tipo, línea de tiempo y PDF.</td><td>Todos</td><td>6.2</td></tr>
+    <tr><td><b>Nueva / editar orden</b></td><td>Registrar fecha, km, mecánico, trabajos del catálogo, repuestos y valores.</td><td>Dueño, recepción</td><td>6.3</td></tr>
+    <tr><td>Clientes</td><td>Lista, alta y edición de clientes con sus vehículos.</td><td>Dueño, recepción</td><td>—</td></tr>
+    <tr><td>Vehículos</td><td>Lista con filtros por marca, modelo y año.</td><td>Todos</td><td>—</td></tr>
+    <tr><td>Recordatorios</td><td>Vehículos con un mantenimiento vencido o próximo, con el teléfono del cliente para llamarlo.</td><td>Dueño, recepción</td><td>6.1</td></tr>
+    <tr><td>Estadísticas</td><td>Trabajos por mes, servicios más frecuentes y marcas más atendidas, con filtros por fechas.</td><td>Dueño</td><td>—</td></tr>
+    <tr><td>Catálogo de servicios</td><td>Tipos de trabajo con su intervalo recomendado en km y meses.</td><td>Dueño</td><td>—</td></tr>
+    <tr><td>Usuarios</td><td>Crear usuarios y asignar roles.</td><td>Dueño</td><td>—</td></tr>
+    <tr><td>Importar Excel</td><td>Subir la plantilla con el historial antiguo, revisar los errores y confirmar.</td><td>Dueño</td><td>—</td></tr>
+    <tr><td>Vista celular</td><td>Las mismas pantallas, adaptadas al teléfono.</td><td>Todos</td><td>6.4</td></tr>
+  </table>
+
+  <h3>Guía visual</h3>
+  <div class="grid2">
+    <div class="card small">
+      <h4>Colores</h4>
+      <div class="row" style="gap:6px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:18px;border-radius:4px;background:#fff;border:1px solid #c5ccd6;display:inline-block"></span>Blanco · fondos</span>
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:18px;border-radius:4px;background:#c2410c;display:inline-block"></span>Rojo · marca y acciones</span>
+      </div>
+      <div class="row" style="gap:6px;margin-top:6px;flex-wrap:wrap">
+        <span class="tag ok">Al día</span><span class="tag warn">Próximo</span><span class="tag due">Vencido</span><span class="tag info">Información</span>
+      </div>
+      <p style="margin-top:6px" class="muted">Los colores del taller son blanco y rojo. Si tiene logo, se usa el suyo.</p>
+    </div>
+    <div class="card small">
+      <h4>Criterios de diseño</h4>
+      <ul style="margin:0">
+        <li><b>Búsqueda primero:</b> la placa siempre está a un clic.</li>
+        <li><b>Botones grandes:</b> se usa con prisa y desde el celular.</li>
+        <li><b>Estados por color:</b> se ve de un vistazo qué está vencido.</li>
+        <li><b>Tipografía Inter</b> con componentes shadcn/ui, y modo claro.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 MOCKUPS (1) ============ -->
+<section class="page">
+  <h3 style="margin-top:0">6.1 Inicio — buscar y ver qué viene</h3>
+
+  
+  <div class="frame">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">https://app.mecanicasanchez.com/</span></div>
+    <div class="app">
+      <div class="side"><div class="logo">MECÁNICA <span>SÁNCHEZ</span></div>
+        <div class="i on">🔍 Buscar</div><div class="i">🚗 Vehículos</div><div class="i">👤 Clientes</div><div class="i">🧾 Órdenes</div><div class="i">⏰ Recordatorios</div><div class="i">📊 Estadísticas</div><div class="i">⚙ Catálogo</div></div>
+      <div class="main">
+        <div class="search"><div class="in">🔍 PBA-12<span class="muted">|  placa, cliente o cédula…</span></div><div class="btn">+ Nueva orden</div></div>
+        <div class="panel" style="margin-bottom:10px">
+          <div class="pt">Resultados</div>
+          <table><tr><th>Placa</th><th>Vehículo</th><th>Cliente</th><th>Último ingreso</th><th>Km</th></tr>
+            <tr><td><b>PBA-1234</b></td><td>Chevrolet D-Max 2016</td><td>Carlos Andrade</td><td>12/09/2026</td><td>148.300</td></tr>
+            <tr><td><b>PBA-1290</b></td><td>Hyundai Tucson 2019</td><td>María Vega</td><td>03/07/2026</td><td>62.150</td></tr></table>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="v">38</div><div class="l">Órdenes este mes</div></div>
+          <div class="kpi"><div class="v">1.247</div><div class="l">Vehículos registrados</div></div>
+          <div class="kpi"><div class="v">12</div><div class="l">Mantenimientos próximos</div></div>
+          <div class="kpi"><div class="v">5</div><div class="l">Vencidos</div></div>
+        </div>
+        <div class="panel"><div class="pt">⏰ Próximos mantenimientos</div>
+          <table><tr><th>Placa</th><th>Cliente</th><th>Servicio</th><th>Último</th><th>Estado</th></tr>
+            <tr><td>PBA-1234</td><td>Carlos Andrade</td><td>Banda de distribución</td><td>85.000 km</td><td><span class="tag due">Vencido · +3.300 km</span></td></tr>
+            <tr><td>GSD-4471</td><td>Jorge Paredes</td><td>Cambio de aceite</td><td>10/08/2026</td><td><span class="tag warn">En 2 semanas</span></td></tr>
+            <tr><td>PCQ-0938</td><td>Ana Torres</td><td>Pastillas de freno</td><td>40.200 km</td><td><span class="tag warn">Faltan ~1.500 km</span></td></tr></table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="caption">Búsqueda tolerante a errores, que aparece apenas se empieza a escribir. Abajo, los mantenimientos vencidos o próximos.</div>
+
+  <h3>6.2 Ficha del vehículo — la respuesta al cliente</h3>
+  <div class="frame">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">https://app.mecanicasanchez.com/vehiculos/PBA-1234</span></div>
+    <div class="app">
+      <div class="main">
+        <div class="vhead">
+          <div><span class="plate">PBA-1234</span> &nbsp;<b style="font-size:11pt">Chevrolet D-Max 2016</b><br><span class="muted">Carlos Andrade · 099 123 4567 · último km registrado: 148.300</span></div>
+          <div style="white-space:nowrap"><span class="btn g">📄 PDF historial</span> <span class="btn">+ Nueva orden</span></div>
+        </div>
+        <div class="row" style="align-items:flex-start;gap:10px">
+          <div class="panel" style="flex:1">
+            <div class="pt">Último servicio por tipo</div>
+            <table><tr><th>Servicio</th><th>Fecha</th><th>Km</th><th>Próximo</th></tr>
+              <tr><td class="hl"><b>Banda distribución</b></td><td class="hl">14/03/2022</td><td class="hl">85.000</td><td><span class="tag due">Vencido</span></td></tr>
+              <tr><td>Retén cigüeñal</td><td>14/03/2022</td><td>85.000</td><td><span class="tag info">Con la banda</span></td></tr>
+              <tr><td>Cambio de aceite</td><td>12/09/2026</td><td>148.300</td><td><span class="tag ok">153.300</span></td></tr>
+              <tr><td>Pastillas de freno</td><td>05/01/2025</td><td>121.700</td><td><span class="tag warn">~151.700</span></td></tr>
+              </table>
+          </div>
+          <div style="flex:1">
+            <div class="pt" style="font-weight:700;margin-bottom:5px">Línea de tiempo</div>
+            <div class="tl">
+              <div class="ev"><div class="top">12/09/2026 · 148.300 km <span>OT-1582 · $45,00</span></div>Cambio de aceite 15W-40 y filtro. <span class="muted">— Mec. Pedro</span></div>
+              <div class="ev"><div class="top">05/01/2025 · 121.700 km <span>OT-1203 · $68,00</span></div>Pastillas delanteras, rectificado de discos.</div>
+              <div class="ev"><div class="top">14/03/2022 · 85.000 km <span>OT-0611 · $320,00</span></div><span class="hl">Kit de banda de distribución</span>, bomba de agua, <span class="hl">retén del cigüeñal</span>.</div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="caption">Con la pregunta del cliente real: la banda de distribución y el retén se cambiaron el 14/03/2022 a los 85.000 km y costaron $320. Encontrarlo toma un clic.</div>
+</section>
+
+<!-- ============ 6 MOCKUPS (2) ============ -->
+<section class="page">
+  <h3 style="margin-top:0">6.3 Nueva orden de trabajo</h3>
+  <div class="frame">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">https://app.mecanicasanchez.com/ordenes/nueva</span></div>
+    <div class="app"><div class="main">
+      <div class="form">
+        <div class="fld"><div class="l">Vehículo (placa)</div><div class="v"><b>PBA-1234</b> · D-Max 2016</div></div>
+        <div class="fld"><div class="l">Fecha</div><div class="v">19/11/2026</div></div>
+        <div class="fld"><div class="l">Kilometraje *</div><div class="v"><b>151.020</b></div></div>
+        <div class="fld"><div class="l">Mecánico</div><div class="v">Pedro ▾</div></div>
+        <div class="fld" style="grid-column:span 2"><div class="l">Motivo de ingreso</div><div class="v">Cambio de banda de distribución por kilometraje</div></div>
+      </div>
+      <div class="panel" style="margin-top:9px">
+        <div class="pt">Trabajos y repuestos</div>
+        <table><tr><th style="width:28%">Servicio (catálogo)</th><th>Tipo</th><th>Descripción</th><th>Cant.</th><th>Precio</th></tr>
+          <tr><td>Banda de distribución ▾</td><td>Mano de obra</td><td>Cambio kit de distribución</td><td>1</td><td>$120,00</td></tr>
+          <tr><td>Banda de distribución ▾</td><td>Repuesto</td><td>Kit Gates K015688XS</td><td>1</td><td>$145,00</td></tr>
+          <tr><td>Retén del cigüeñal ▾</td><td>Repuesto</td><td>Retén delantero</td><td>1</td><td>$12,00</td></tr>
+          <tr><td class="muted">+ agregar línea</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td colspan="4" style="text-align:right"><b>Total</b></td><td><b>$277,00</b></td></tr></table>
+        <div class="chips" style="margin-top:6px"><span class="muted" style="border:none;padding-left:0">Frecuentes:</span><span>Cambio de aceite</span><span>Filtro de aire</span><span>Pastillas de freno</span><span>ABC de frenos</span><span>Alineación</span><span>Bomba de agua</span></div>
+      </div>
+      <div class="fld"><div class="l">Observaciones</div><div class="v">Se recomienda revisar el tensor en el próximo ingreso.</div></div>
+      <div style="text-align:right;margin-top:8px"><span class="btn g">Cancelar</span> <span class="btn">Guardar orden</span></div>
+    </div></div>
+  </div>
+  <div class="caption">Registrar un trabajo toma menos de un minuto. Elegir el servicio del catálogo es lo que hace que la búsqueda y los recordatorios funcionen.</div>
+
+  <h3>6.4 En el celular y PDF del historial</h3>
+  <div class="row" style="align-items:flex-start;gap:18px">
+    <div class="phone">
+      <div class="ph">🔍 Buscar · Taller</div>
+      <div class="pb">
+        <div style="border:1.5px solid var(--brand);background:#fff;border-radius:6px;padding:5px 7px;margin-bottom:7px">PBA-1234</div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:6px;padding:7px;margin-bottom:6px">
+          <span class="plate" style="font-size:9pt">PBA-1234</span><br><b>D-Max 2016</b> · Carlos Andrade
+        </div>
+        <div style="background:#fff;border:1px solid var(--line);border-radius:6px;padding:7px">
+          <b>Banda distribución</b><br>14/03/2022 · 85.000 km<br><span class="tag due">Vencido</span>
+          <hr style="border:none;border-top:1px solid var(--line)">
+          <b>Aceite</b><br>12/09/2026 · 148.300 km<br><span class="tag ok">Al día</span>
+        </div>
+        <div style="margin-top:7px;text-align:center"><span class="btn" style="font-size:8pt">📄 PDF historial</span></div>
+      </div>
+    </div>
+    <div style="flex:1">
+      <div class="pdfdoc">
+        <div style="display:flex;justify-content:space-between;border-bottom:2px solid var(--brand);padding-bottom:5px;margin-bottom:6px"><b style="font-size:10pt">Historial de mantenimiento</b><span class="muted">19/11/2026</span></div>
+        <b>PBA-1234</b> · Chevrolet D-Max 2016<br><span class="muted">Propietario: Carlos Andrade</span>
+        <table style="margin-top:6px;font-size:7.6pt"><tr><th>Fecha</th><th>Km</th><th>Trabajo</th></tr>
+          <tr><td>12/09/2026</td><td>148.300</td><td>Cambio de aceite y filtro</td></tr>
+          <tr><td>05/01/2025</td><td>121.700</td><td>Pastillas delanteras</td></tr>
+          <tr><td>14/03/2022</td><td>85.000</td><td>Kit distribución, bomba de agua, retén cigüeñal</td></tr>
+          <tr><td>22/06/2019</td><td>41.200</td><td>Mantenimiento 40.000 km</td></tr></table>
+        <span class="muted small">Próximo recomendado: banda de distribución (vencido).</span>
+      </div>
+      <div class="caption" style="margin-top:6px">PDF del historial generado con un clic, con los datos del taller. Se descarga o se imprime para entregarlo al cliente.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 LANDING ============ -->
+<section class="page">
+  <h2><span class="num">7.</span>Landing page del taller</h2>
+  <p>Página pública en <b>mecanicasanchez.com</b> (ejemplo) para que el taller aparezca en Google, muestre sus servicios y reciba clientes por WhatsApp. El sistema interno queda en <b>app.mecanicasanchez.com</b>. Los textos, las fotos y el nombre real se definen con el taller.</p>
+
+  <div class="frame" style="margin-top:6px">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">https://mecanicasanchez.com</span></div>
+    <div style="font-size:8.4pt">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#fff;border-bottom:1px solid var(--line)">
+        <b style="font-size:11pt">MECÁNICA <span style="color:#c8102e">SÁNCHEZ</span> <span class="muted" style="font-weight:400;font-size:8pt">· Mecánica automotriz</span></b>
+        <span class="muted">Servicios &nbsp; Nosotros &nbsp; Ubicación &nbsp; <span class="btn" style="padding:3px 10px;background:#16a34a">💬 WhatsApp</span></span>
+      </div>
+      <div style="display:flex;gap:14px;padding:12px 16px;background:linear-gradient(120deg,#c8102e 0%,#9e0b23 100%);color:#fff">
+        <div style="flex:1.3">
+          <div style="color:#ffd5db;font-weight:700;font-size:8pt;letter-spacing:.06em">MECÁNICA AUTOMOTRIZ DE CONFIANZA</div>
+          <div style="font-size:15pt;font-weight:800;line-height:1.15;margin:4px 0 6px">Su vehículo en manos de expertos, con historial de cada trabajo</div>
+          <div style="color:#ffe9ec;margin-bottom:10px">Mantenimiento, diagnóstico y reparación. Le decimos qué se le hizo a su vehículo, cuándo y a qué kilometraje.</div>
+          <span class="btn" style="background:#fff;color:#c8102e">💬 Agendar por WhatsApp</span> <span class="btn g">📍 Cómo llegar</span>
+          <div style="display:flex;gap:14px;margin-top:12px;font-weight:600">
+            <div>✔ Diagnóstico honesto</div><div>✔ Repuestos de calidad</div><div>✔ Historial digital</div>
+          </div>
+        </div>
+        <div style="flex:1;border:2px dashed rgba(255,255,255,.6);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ffe9ec;min-height:90px">📷 Foto real del taller</div>
+      </div>
+      <div style="padding:12px 16px;background:#f7f8fa">
+        <b style="font-size:10pt">Nuestros servicios</b>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px">
+          <div class="panel" style="margin:0">🛢 <b>Cambio de aceite</b><br><span class="muted">y filtros</span></div>
+          <div class="panel" style="margin:0">⚙ <b>Banda de distribución</b><br><span class="muted">kit completo</span></div>
+          <div class="panel" style="margin:0">🛑 <b>Frenos</b><br><span class="muted">ABC, pastillas, discos</span></div>
+          <div class="panel" style="margin:0">🔧 <b>Mantenimiento</b><br><span class="muted">preventivo por km</span></div>
+          <div class="panel" style="margin:0">🚙 <b>Suspensión</b><br><span class="muted">y dirección</span></div>
+          <div class="panel" style="margin:0">⚡ <b>Electricidad</b><br><span class="muted">y diagnóstico</span></div>
+          <div class="panel" style="margin:0">🔩 <b>Embrague</b><br><span class="muted">y caja</span></div>
+          <div class="panel" style="margin:0">🌡 <b>Refrigeración</b><br><span class="muted">bomba, radiador</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:12px 16px;background:#fff">
+        <div style="flex:1;background:var(--brand-soft);border-radius:8px;padding:10px">
+          <b>📋 Historial digital de su vehículo</b><br>Guardamos cada trabajo con su fecha, kilometraje y repuestos. Pida su historial y le indicamos cuándo le toca el próximo mantenimiento.
+        </div>
+        <div style="flex:1;display:flex;gap:8px">
+          <div style="flex:1;border:2px dashed #c5ccd6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted)">🗺 Mapa de Google</div>
+          <div style="flex:1"><b>Horario</b><br>Lun – Vie · 08:00 – 18:00<br>Sábado · 08:00 – 13:00<br><b>Teléfono</b><br>099 539 6039</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:7px 16px;background:#1b2430;color:#9aa6b5;font-size:7.8pt">
+        <span>© 2026 Mecánica Automotriz Sánchez · Av. Oswaldo Guayasamín E3-115 y Manuel Betancourt · Cumbayá</span><span>Acceso del personal → app.mecanicasanchez.com</span>
+      </div>
+    </div>
+  </div>
+  <div class="caption">Versión de escritorio. Los textos, los servicios y las fotos se reemplazan con los reales del taller.</div>
+
+  <div class="row" style="align-items:flex-start;gap:16px">
+    <div class="phone" style="width:175px">
+      <div class="ph" style="display:flex;justify-content:space-between;background:#fff;color:#1b2430;border-bottom:1px solid var(--line)"><span>MECÁNICA <span style="color:#c8102e">SÁNCHEZ</span></span><span>☰</span></div>
+      <div style="background:linear-gradient(120deg,#c8102e,#9e0b23);color:#fff;padding:10px">
+        <b style="font-size:10pt;line-height:1.2;display:block">Su vehículo en manos de expertos</b>
+        <div style="color:#ffe9ec;margin:4px 0 6px">Con historial de cada trabajo.</div>
+        <span class="btn" style="background:#16a34a;font-size:7.5pt">💬 Agendar</span>
+      </div>
+      <div class="pb">
+        <div class="panel" style="margin-bottom:4px">🛢 Cambio de aceite</div>
+        <div class="panel" style="margin-bottom:4px">⚙ Banda de distribución</div>
+        <div style="text-align:right"><span style="display:inline-block;background:#16a34a;color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center">💬</span></div>
+      </div>
+    </div>
+    <div style="flex:1">
+      <table style="font-size:8.8pt;margin-top:0">
+        <tr><th colspan="2">Qué incluye la landing</th></tr>
+        <tr><td style="width:34%">Secciones</td><td>Inicio, servicios, historial digital, ubicación y horario, contacto y acceso del personal.</td></tr>
+        <tr><td>WhatsApp</td><td>Botón que abre el chat de WhatsApp del taller.</td></tr>
+        <tr><td>Google</td><td>SEO local (datos del negocio para Google), perfil de Google Maps configurado y reseñas.</td></tr>
+        <tr><td>Tecnología</td><td>Astro + Tailwind, publicada gratis en Cloudflare Pages. Carga en menos de 1 segundo.</td></tr>
+        <tr><td>Independiente</td><td>Sigue en línea aunque el sistema interno esté en mantenimiento.</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+<!-- ============ 9 CRONOGRAMA + 10 INVERSIÓN ============ -->
+<section class="page">
+  <h2><span class="num">8.</span>Cronograma</h2>
+  <p>Aproximadamente <b>6 semanas</b> en medio tiempo, con avances que el taller puede revisar cada semana.</p>
+  <table class="gantt">
+    <tr><th style="width:48%">Actividad</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5</th><th>S6</th></tr>
+    <tr><td>Visita al taller, revisión de hojas reales, catálogo de servicios</td><td class="f"></td><td class="e"></td><td class="e"></td><td class="e"></td><td class="e"></td><td class="e"></td></tr>
+    <tr><td>Base: monorepo, VPS, Docker, Prisma, login y roles, respaldos</td><td class="f"></td><td class="f"></td><td class="e"></td><td class="e"></td><td class="e"></td><td class="e"></td></tr>
+    <tr><td>Clientes, vehículos y búsqueda (API + pantallas)</td><td class="e"></td><td class="f"></td><td class="f"></td><td class="e"></td><td class="e"></td><td class="e"></td></tr>
+    <tr><td>Órdenes de trabajo y ficha del vehículo</td><td class="e"></td><td class="e"></td><td class="f"></td><td class="f"></td><td class="e"></td><td class="e"></td></tr>
+    <tr><td>Recordatorios y PDF del historial</td><td class="e"></td><td class="e"></td><td class="e"></td><td class="f"></td><td class="f"></td><td class="e"></td></tr>
+    <tr><td>Estadísticas, importador de Excel y landing page</td><td class="e"></td><td class="e"></td><td class="e"></td><td class="e"></td><td class="f"></td><td class="e"></td></tr>
+    <tr><td>Puesta en producción, pruebas con datos reales y capacitación</td><td class="e"></td><td class="e"></td><td class="e"></td><td class="e"></td><td class="e"></td><td class="f"></td></tr>
+  </table>
+  <p class="small"><b>Entregables:</b> sistema en la nube · landing con dominio · perfil de Google Maps · respaldos probados · plantilla de Excel · capacitación y guía de uso.</p>
+
+  <h2 style="margin-top:12px"><span class="num">9.</span>Inversión y forma de pago</h2>
+  <div class="grid2">
+    <div class="card">
+      <h4>Desarrollo — Entregable 1</h4>
+      <div class="price">$400 USD</div>
+      <p class="small muted">Precio cerrado por todo lo descrito en la sección 2, incluidas la puesta en producción y la capacitación.</p>
+      <p class="small"><b>Pago a crédito sin intereses:</b> 4 cuotas mensuales de <b>$100</b>, la primera al iniciar.</p>
+    </div>
+    <div class="card">
+      <h4>Mantenimiento mensual (opcional)</h4>
+      <div class="price" style="font-size:16pt">$15 USD / mes</div>
+      <p class="small"><b>Los 3 primeros meses sin costo.</b> Respaldos vigilados y probados, actualizaciones de seguridad, corrección de errores y soporte remoto. Las funciones nuevas se cotizan aparte.</p>
+    </div>
+  </div>
+
+  <h3>Infraestructura definida (la paga el taller directamente, cuentas a su nombre)</h3>
+  <table style="font-size:9pt">
+    <tr><th style="width:22%">Servicio</th><th>Proveedor y uso</th><th style="width:17%">Costo</th></tr>
+    <tr><td>Servidor (VPS)</td><td><b>Vultr Cloud Compute</b> 2 GB en Miami (cerca de Ecuador, baja latencia). Corre <i>app.mecanicasanchez.com</i>.</td><td>≈ $10 / mes</td></tr>
+    <tr><td>Dominio</td><td><b>mecanicasanchez.com</b> (ejemplo) en Cloudflare Registrar, a precio de costo.</td><td>≈ $11 / año</td></tr>
+    <tr><td>Servicios gratis</td><td>Cloudflare: DNS, landing (Pages), respaldos (R2) y correo <i>contacto@</i> · UptimeRobot · Google Business Profile.</td><td>$0</td></tr>
+    <tr><td colspan="2" style="text-align:right"><b>Total</b></td><td><b>≈ $11 / mes</b></td></tr>
+  </table>
+  <p class="small muted">No hace falta comprar equipos. Opción más barata: Contabo (≈ $5 – 6 al mes), con disco y soporte más lentos. Los precios se confirman al contratar.</p>
+
+  <h3>Condiciones</h3>
+  <ul class="small">
+    <li>El alcance es el de la sección 2. Cualquier función nueva se cotiza aparte.</li>
+    <li>La digitación del historial en papel la realiza el taller con la plantilla de Excel. Se sugiere empezar por los clientes frecuentes.</li>
+    <li>El código y los datos son propiedad del taller.</li>
+  </ul>
+
+  <div class="sign">
+    <div>Mecánica Automotriz Sánchez<br><span class="muted">Aprobado</span></div>
+    <div>Diego Hidalgo<br><span class="muted">Desarrollador</span></div>
+  </div>
+</section>
+
+</body>
+</html>

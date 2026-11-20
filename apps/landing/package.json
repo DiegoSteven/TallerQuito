@@ -1,0 +1,16 @@
+{
+  "name": "@taller/landing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 4321",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "echo \"(landing) sin typecheck\"",
+    "test": "echo \"(landing) sin pruebas\""
+  },
+  "dependencies": {
+    "astro": "^5.8.0"
+  }
+}

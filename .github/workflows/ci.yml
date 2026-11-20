@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: taller
+          POSTGRES_USER: taller
+          POSTGRES_PASSWORD: taller
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U taller" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://taller:taller@localhost:5432/taller?schema=public
+      JWT_SECRET: ci-secreto-de-prueba-con-mas-de-32-caracteres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
+      - run: psql "$DATABASE_URL" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
+      - run: pnpm --filter @taller/api exec prisma migrate deploy
+      - run: pnpm --filter @taller/shared build
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  imagenes:
+    needs: verificar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose build
+
+  # Despliegue al VPS (se activa cuando el servidor esté listo):
+  # deploy:
+  #   needs: imagenes
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: appleboy/ssh-action@v1
+  #       with:
+  #         host: ${{ secrets.VPS_HOST }}
+  #         username: ${{ secrets.VPS_USER }}
+  #         key: ${{ secrets.VPS_SSH_KEY }}
+  #         script: cd ~/taller && git pull && docker compose up -d --build

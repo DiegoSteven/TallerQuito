@@ -1,0 +1,23 @@
+{
+  "name": "taller-historial",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema de historial de mantenimiento vehicular — Fase 1",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:db": "docker compose -f docker-compose.dev.yml up -d",
+    "dev:db:down": "docker compose -f docker-compose.dev.yml down",
+    "dev:api": "pnpm --filter @taller/api start:dev",
+    "dev:web": "pnpm --filter @taller/web dev",
+    "dev:landing": "pnpm --filter @taller/landing dev",
+    "db:generate": "pnpm --filter @taller/api prisma:generate",
+    "db:migrate": "pnpm --filter @taller/api prisma:migrate",
+    "db:seed": "pnpm --filter @taller/api prisma:seed",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

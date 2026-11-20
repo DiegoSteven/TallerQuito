@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.astro/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+infra/backup/rclone.conf
+backups/
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
