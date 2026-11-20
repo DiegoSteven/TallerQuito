@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mecánica Automotriz Sánchez — Prototipo Fase 1</title>
+<title>TECNICENTRO AUTOMOTRIZ Sánchez — Prototipo Fase 1</title>
 <style>
 :root{
   --red:#c8102e; --red-dark:#9e0b23; --red-soft:#fdeaec; --red-line:#f5c2c9;
@@ -212,7 +212,7 @@ tr.click:hover td{background:#fff7f8}
 <!-- ======================= LANDING ======================= -->
 <div id="v-landing">
   <header class="l-nav">
-    <div class="logo">MECÁNICA <span>SÁNCHEZ</span><small>MECÁNICA AUTOMOTRIZ</small></div>
+    <div class="logo">MECÁNICA <span>SÁNCHEZ</span><small>TECNICENTRO AUTOMOTRIZ</small></div>
     <nav>
       <a href="#servicios">Servicios</a><a href="#historial">Historial</a><a href="#ubicacion">Ubicación</a>
       <a class="btn wa sm" style="color:#fff" href="#" onclick="waTaller(event)">💬 WhatsApp</a>
@@ -221,7 +221,7 @@ tr.click:hover td{background:#fff7f8}
 
   <section class="hero">
     <div>
-      <div class="k">MECÁNICA AUTOMOTRIZ DE CONFIANZA</div>
+      <div class="k">TECNICENTRO AUTOMOTRIZ DE CONFIANZA</div>
       <h1>Su vehículo en manos de expertos, con el historial de cada trabajo</h1>
       <p>Mantenimiento, diagnóstico y reparación. Sabemos qué se le hizo a su vehículo, cuándo y a qué kilometraje.</p>
       <div class="ctas">
@@ -299,7 +299,7 @@ tr.click:hover td{background:#fff7f8}
   </section>
 
   <footer class="l-foot">
-    <span>© 2026 Mecánica Automotriz Sánchez · Mecánica automotriz</span>
+    <span>© 2026 TECNICENTRO AUTOMOTRIZ Sánchez · TECNICENTRO AUTOMOTRIZ</span>
     <a onclick="go('login')">Acceso del personal →</a>
   </footer>
   <a class="wafab" href="#" onclick="waTaller(event)" title="WhatsApp">💬</a>
@@ -618,7 +618,7 @@ function guardarOrden(){
 function pdfHist(vid){
   const v=veh(vid), c=cli(v.c), os=ordsOf(vid), L=lastBySvc(vid), km=curKm(vid);
   const pend=Object.keys(L).map(id=>({s:cat(id),st:status(cat(id),L[id],km)})).filter(x=>x.st&&x.st.c!=='ok');
-  modal(`<div class="doc"><div class="dh"><div><div class="logo">MECÁNICA <span>SÁNCHEZ</span></div><div class="note">Mecánica automotriz · 099 539 6039</div></div><div style="text-align:right"><b>Historial de mantenimiento</b><div class="note">${fd(TODAY)}</div></div></div>
+  modal(`<div class="doc"><div class="dh"><div><div class="logo">MECÁNICA <span>SÁNCHEZ</span></div><div class="note">TECNICENTRO AUTOMOTRIZ · 099 539 6039</div></div><div style="text-align:right"><b>Historial de mantenimiento</b><div class="note">${fd(TODAY)}</div></div></div>
   <p style="margin:0 0 10px"><span class="plate">${v.p}</span> <b>${v.ma} ${v.mo} ${v.a}</b> · ${v.mot}<br><span class="note">Propietario: ${c.n} · Último km: ${fk(km)}</span></p>
   <table><tr><th>Fecha</th><th>Km</th><th>Trabajos</th><th>Valor</th></tr>${os.map(o=>`<tr><td>${fd(o.d)}</td><td>${fk(o.km)}</td><td>${o.it.map(i=>esc(i[2])).join(', ')}</td><td>${fm(ordTotal(o))}</td></tr>`).join('')}</table>
   ${pend.length?`<p style="margin-top:12px"><b>Recomendado:</b> ${pend.map(p=>`${p.s.n} (<span style="color:var(--red)">${p.st.t}</span>)`).join(' · ')}</p>`:''}</div>

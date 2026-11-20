@@ -36,6 +36,10 @@ export interface ItemOrden {
   descripcion: string;
   cantidad: number | string;
   precioUnitario: number | string;
+  /** Próximo cambio propio de este trabajo (null = el del catálogo). */
+  intervaloKm?: number | null;
+  intervaloMeses?: number | null;
+  tipoServicio?: { id: number; nombre: string; intervaloKm: number | null; intervaloMeses: number | null } | null;
 }
 
 export interface Orden {
@@ -64,6 +68,15 @@ export interface TipoServicio {
   id: number;
   nombre: string;
   categoria: string | null;
+  intervaloKm: number | null;
+  intervaloMeses: number | null;
+}
+
+/** "158.300 km · may 2027" a partir de un próximo cambio. */
+export function textoProximo(p: { km: number | null; fecha: Date | null }): string {
+  return [p.km ? `${p.km.toLocaleString('es-EC')} km` : null, p.fecha ? p.fecha.toLocaleDateString('es-EC', { month: 'short', year: 'numeric', timeZone: 'UTC' }).replace('.', '') : null]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 // ─── Formatos ───

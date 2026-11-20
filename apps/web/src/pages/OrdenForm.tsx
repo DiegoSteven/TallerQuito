@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { normalizarPlaca, type Carroceria, type ChecklistRecepcion, type MarcaDanio, type TipoDanio } from '@taller/shared';
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { normalizarPlaca, proximoCambio, type Carroceria, type ChecklistRecepcion, type MarcaDanio, type TipoDanio } from '@taller/shared';
+import { Fragment, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api';
 import { Icono } from '../components/Iconos';
@@ -10,6 +10,7 @@ import {
   aInputFechaHora,
   deInputFechaHora,
   dinero,
+  textoProximo,
   formatoNumero,
   km,
   type Cliente,
@@ -53,6 +54,9 @@ interface FilaItem {
   descripcion: string;
   cantidad: string;
   precioUnitario: string;
+  /** Próximo cambio de este trabajo (vacío = el del catálogo). */
+  intervaloKm: string;
+  intervaloMeses: string;
 }
 let contador = 0;
 const filaNueva = (tipo: TipoItem, i?: ItemOrden): FilaItem => ({
@@ -62,6 +66,8 @@ const filaNueva = (tipo: TipoItem, i?: ItemOrden): FilaItem => ({
   descripcion: i?.descripcion ?? '',
   cantidad: i ? String(Number(i.cantidad)) : '1',
   precioUnitario: i ? String(Number(i.precioUnitario)) : '',
+  intervaloKm: i?.intervaloKm ? String(i.intervaloKm) : '',
+  intervaloMeses: i?.intervaloMeses ? String(i.intervaloMeses) : '',
 });
 const valorFila = (f: FilaItem) => (Number(f.cantidad) || 0) * (Number(f.precioUnitario) || 0);
 
@@ -253,7 +259,13 @@ export function OrdenForm() {
             descripcion: f.descripcion.trim(),
             cantidad: Number(f.cantidad),
             precioUnitario: Number(f.precioUnitario) || 0,
-            ...(f.tipoServicioId ? { tipoServicioId: Number(f.tipoServicioId) } : {}),
+            ...(f.tipoServicioId
+              ? {
+                  tipoServicioId: Number(f.tipoServicioId),
+                  intervaloKm: f.intervaloKm ? Number(f.intervaloKm) : null,
+                  intervaloMeses: f.intervaloMeses ? Number(f.intervaloMeses) : null,
+                }
+              : {}),
           })),
         ...(forzarKm ? { forzarKm: true } : {}),
       };
@@ -281,6 +293,55 @@ export function OrdenForm() {
     }
   }
 
+  /**
+   * Segunda línea de un trabajo del catálogo: cada cuánto es el próximo cambio para ESTE carro
+   * (p. ej. aceite sintético cada 10.000 km). Viene con el valor del catálogo y se puede ajustar.
+   * Es una función (no un componente) para que los inputs no pierdan el foco al escribir.
+   */
+  const filaProximo = (f: FilaItem) => {
+    const servicio = catalogo.data?.find((c) => String(c.id) === f.tipoServicioId);
+    const intervalo = {
+      intervaloKm: f.intervaloKm ? Number(f.intervaloKm) : (servicio?.intervaloKm ?? null),
+      intervaloMeses: f.intervaloMeses ? Number(f.intervaloMeses) : (servicio?.intervaloMeses ?? null),
+    };
+    const llegada = fechaLlegada ? new Date(fechaLlegada) : new Date();
+    const proximo = textoProximo(proximoCambio(intervalo, { fecha: llegada, km: Number(kilometraje) || 0 }));
+    const propio =
+      (f.intervaloKm !== '' && Number(f.intervaloKm) !== servicio?.intervaloKm) ||
+      (f.intervaloMeses !== '' && Number(f.intervaloMeses) !== servicio?.intervaloMeses);
+    const corto = 'w-24 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-marca focus:outline-none';
+    return (
+      <tr>
+        <td colSpan={6} className="px-1 pt-0 pb-2">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
+            <span className="font-bold text-tinta">Próximo cambio:</span>
+            cada
+            <input className={corto} inputMode="numeric" placeholder="km" value={f.intervaloKm} onChange={(e) => cambiarFila(f.clave, { intervaloKm: e.target.value.replace(/\D/g, '') })} />
+            km ·
+            <input className={`${corto} w-16`} inputMode="numeric" placeholder="meses" value={f.intervaloMeses} onChange={(e) => cambiarFila(f.clave, { intervaloMeses: e.target.value.replace(/\D/g, '') })} />
+            meses
+            {proximo && kilometraje && <span className="font-semibold text-marca">→ {proximo}</span>}
+            {propio && (
+              <button
+                type="button"
+                className="ml-auto text-slate-500 underline hover:text-marca"
+                title={`Catálogo: ${servicio?.intervaloKm ?? '—'} km · ${servicio?.intervaloMeses ?? '—'} meses`}
+                onClick={() =>
+                  cambiarFila(f.clave, {
+                    intervaloKm: servicio?.intervaloKm ? String(servicio.intervaloKm) : '',
+                    intervaloMeses: servicio?.intervaloMeses ? String(servicio.intervaloMeses) : '',
+                  })
+                }
+              >
+                usar catálogo
+              </button>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  };
+
   const tablaFilas = (tipo: TipoItem, lista: FilaItem[]) => (
     <div>
       <div className="overflow-x-auto">
@@ -297,7 +358,8 @@ export function OrdenForm() {
           </thead>
           <tbody>
             {lista.map((f) => (
-              <tr key={f.clave} className="border-t border-gray-100">
+              <Fragment key={f.clave}>
+              <tr className="border-t border-gray-100">
                 <td className="p-1">
                   <input
                     className={INPUT}
@@ -312,8 +374,14 @@ export function OrdenForm() {
                     value={f.tipoServicioId}
                     title="Sirve para el historial y los recordatorios"
                     onChange={(e) => {
-                      const nombre = catalogo.data?.find((c) => String(c.id) === e.target.value)?.nombre;
-                      cambiarFila(f.clave, { tipoServicioId: e.target.value, ...(!f.descripcion && nombre ? { descripcion: nombre } : {}) });
+                      const servicio = catalogo.data?.find((c) => String(c.id) === e.target.value);
+                      cambiarFila(f.clave, {
+                        tipoServicioId: e.target.value,
+                        ...(!f.descripcion && servicio ? { descripcion: servicio.nombre } : {}),
+                        // Se proponen los intervalos del catálogo; el mecánico los ajusta según lo que puso.
+                        intervaloKm: servicio?.intervaloKm ? String(servicio.intervaloKm) : '',
+                        intervaloMeses: servicio?.intervaloMeses ? String(servicio.intervaloMeses) : '',
+                      });
                     }}
                   >
                     <option value="">—</option>
@@ -348,6 +416,8 @@ export function OrdenForm() {
                   </button>
                 </td>
               </tr>
+              {f.tipoServicioId && filaProximo(f)}
+              </Fragment>
             ))}
           </tbody>
         </table>

@@ -1,6 +1,5 @@
 // @ts-check
 const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
@@ -25,15 +24,8 @@ async function main() {
     await prisma.tipoServicio.upsert({ where: { nombre: s.nombre }, update: {}, create: s });
   }
 
-  const usuario = process.env.SEED_ADMIN_USER ?? 'luis';
-  const password = process.env.SEED_ADMIN_PASSWORD;
-  if (!password) throw new Error('Defina SEED_ADMIN_PASSWORD para crear el usuario inicial.');
-
-  await prisma.usuario.upsert({
-    where: { usuario },
-    update: {},
-    create: { nombre: 'Luis', usuario, rol: 'DUENO', passwordHash: await bcrypt.hash(password, 12) },
-  });
+  // No se crea ningún usuario aquí (no hay contraseñas fijas en el código ni en el .env).
+  // La cuenta del dueño se crea en el servidor con: node prisma/crear-dueno.js
 
   // Numeración: continúa la del talonario en papel (ej. el último fue 0000765 → NUMERO_ORDEN_INICIAL=766).
   const inicial = Number(process.env.NUMERO_ORDEN_INICIAL ?? 0);
@@ -43,7 +35,7 @@ async function main() {
     console.log(`Numeración de órdenes: la próxima será la ${String(inicial).padStart(7, '0')} o mayor.`);
   }
 
-  console.log(`Seed listo: ${CATALOGO.length} servicios en el catálogo y usuario "${usuario}".`);
+  console.log(`Seed listo: ${CATALOGO.length} servicios en el catálogo.`);
 }
 
 main()

@@ -10,6 +10,11 @@ import { OrdenForm } from './pages/OrdenForm';
 import { OrdenDetalle } from './pages/OrdenDetalle';
 import { Ordenes } from './pages/Ordenes';
 import { MantenimientoLanding } from './pages/MantenimientoLanding';
+import { Usuarios } from './pages/Usuarios';
+import { Clientes } from './pages/Clientes';
+import { Vehiculos } from './pages/Vehiculos';
+import { Catalogo } from './pages/Catalogo';
+import { MiCuenta } from './pages/MiCuenta';
 
 export function App() {
   const { usuario } = useAuth();
@@ -34,11 +39,12 @@ export function App() {
         <Route path="ordenes/:id" element={<OrdenDetalle />} />
         <Route path="ordenes/:id/editar" element={<OrdenForm key="editar" />} />
         {/* Pantallas del cronograma que se construyen en las siguientes semanas */}
-        <Route path="vehiculos" element={<Pendiente titulo="Vehículos" />} />
-        <Route path="clientes" element={<Pendiente titulo="Clientes" />} />
+        <Route path="vehiculos" element={<Vehiculos />} />
+        <Route path="clientes" element={<Clientes />} />
         <Route path="estadisticas" element={<Pendiente titulo="Estadísticas" />} />
-        <Route path="catalogo" element={<Pendiente titulo="Catálogo de servicios" />} />
-        <Route path="usuarios" element={<Pendiente titulo="Usuarios" />} />
+        <Route path="catalogo" element={usuario.rol === 'DUENO' ? <Catalogo /> : <Navigate to="/" replace />} />
+        <Route path="usuarios" element={usuario.rol === 'DUENO' ? <Usuarios /> : <Navigate to="/" replace />} />
+        <Route path="mi-cuenta" element={<MiCuenta />} />
         <Route path="importar" element={<Pendiente titulo="Importar desde Excel" />} />
         <Route path="landing" element={<MantenimientoLanding />} />
         <Route path="login" element={<Navigate to="/" replace />} />

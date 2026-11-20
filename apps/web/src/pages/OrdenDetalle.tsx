@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { HITOS_ORDEN } from '@taller/shared';
+import { HITOS_ORDEN, intervaloEfectivo, proximoCambio } from '@taller/shared';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
 import { Icono } from '../components/Iconos';
 import { Checklist, Combustible, DiagramaCarroceria } from '../components/Recepcion';
-import { abrirPdf, dinero, ESTADOS_ORDEN, fechaHora, formatoNumero, km, type ItemOrden, type Orden } from '../tipos';
+import { abrirPdf, dinero, ESTADOS_ORDEN, fechaHora, formatoNumero, km, textoProximo, type ItemOrden, type Orden } from '../tipos';
 
 function Bloque({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
@@ -29,7 +29,7 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: ReactNode }) {
   );
 }
 
-function TablaItems({ items, vacio }: { items: ItemOrden[]; vacio: string }) {
+function TablaItems({ items, vacio, hecho }: { items: ItemOrden[]; vacio: string; hecho: { fecha: Date; km: number } }) {
   if (!items.length) return <p className="py-2 text-sm italic text-slate-400">{vacio}</p>;
   return (
     <table className="w-full text-sm">
@@ -37,7 +37,19 @@ function TablaItems({ items, vacio }: { items: ItemOrden[]; vacio: string }) {
         {items.map((i) => (
           <tr key={i.id} className="border-t border-slate-100 first:border-t-0">
             <td className="w-10 py-2 text-center font-display text-xs font-bold text-slate-500">{Number(i.cantidad)}</td>
-            <td className="py-2">{i.descripcion}</td>
+            <td className="py-2">
+              {i.descripcion}
+              {i.tipoServicio &&
+                ((intervalo) => {
+                  const texto = textoProximo(proximoCambio(intervalo, hecho));
+                  return texto ? (
+                    <div className="text-xs font-semibold text-marca">
+                      Próximo cambio: {texto}
+                      {intervalo.personalizado && <span className="chip ml-1.5 bg-amber-100 text-amber-800">según este carro</span>}
+                    </div>
+                  ) : null;
+                })(intervaloEfectivo(i, i.tipoServicio))}
+            </td>
             <td className="py-2 text-right font-display font-bold text-tinta">{dinero(Number(i.cantidad) * Number(i.precioUnitario))}</td>
           </tr>
         ))}
@@ -224,10 +236,10 @@ export function OrdenDetalle() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Bloque titulo={`Repuestos · ${dinero(suma(repuestos))}`}>
-          <TablaItems items={repuestos} vacio="Aún sin repuestos." />
+          <TablaItems items={repuestos} vacio="Aún sin repuestos." hecho={{ fecha: new Date(o.fecha), km: o.kilometraje }} />
         </Bloque>
         <Bloque titulo={`Mano de obra · ${dinero(suma(manoObra))}`}>
-          <TablaItems items={manoObra} vacio="Aún sin trabajos registrados." />
+          <TablaItems items={manoObra} vacio="Aún sin trabajos registrados." hecho={{ fecha: new Date(o.fecha), km: o.kilometraje }} />
         </Bloque>
       </div>
 

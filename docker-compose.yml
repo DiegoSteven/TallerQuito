@@ -35,9 +35,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-12h}
       TZ: ${TZ:-America/Guayaquil}
-      # Solo los usa el seed inicial (docker compose exec api ./node_modules/.bin/prisma db seed)
-      SEED_ADMIN_USER: ${SEED_ADMIN_USER:-luis}
-      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      # Lo usa el seed inicial (docker compose exec api ./node_modules/.bin/prisma db seed)
       NUMERO_ORDEN_INICIAL: ${NUMERO_ORDEN_INICIAL:-}
       # Dominios que pueden leer la API (la landing pública), separados por coma
       CORS_ORIGENES: ${CORS_ORIGENES:-}

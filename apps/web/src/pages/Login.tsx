@@ -24,6 +24,7 @@ const BENEFICIOS = [
 
 export function Login() {
   const { login } = useAuth();
+
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
@@ -151,7 +152,7 @@ export function Login() {
           </div>
 
           <p className="mt-5 text-center text-xs text-slate-400">
-            Acceso exclusivo del personal de Mecánica Automotriz Sánchez.
+            Acceso exclusivo del personal de TECNICENTRO AUTOMOTRIZ Sánchez.
           </p>
         </div>
       </div>

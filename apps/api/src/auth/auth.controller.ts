@@ -14,6 +14,16 @@ class LoginDto {
   password: string;
 }
 
+/** Largo mínimo de contraseña (usuarios nuevos, cambios y el script crear-dueno). */
+export const PASSWORD_MIN = 8;
+
+class CambiarPasswordDto {
+  @IsString() actual: string;
+
+  @IsString() @MinLength(PASSWORD_MIN, { message: `La contraseña nueva debe tener al menos ${PASSWORD_MIN} caracteres` })
+  nueva: string;
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -32,5 +42,14 @@ export class AuthController {
   @Get('yo')
   yo(@UsuarioActual() user: UsuarioSesion) {
     return user;
+  }
+
+  /** Cualquier usuario cambia su propia contraseña (pide la actual). */
+  @ApiBearerAuth()
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  @Post('cambiar-password')
+  @HttpCode(204)
+  cambiarPassword(@UsuarioActual() user: UsuarioSesion, @Body() dto: CambiarPasswordDto) {
+    return this.auth.cambiarPassword(user.id, dto.actual, dto.nueva);
   }
 }

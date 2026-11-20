@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import type { TipoServicio } from '@prisma/client';
-import { calcularRecordatorio, estimarKmActual, Recordatorio } from '@taller/shared';
+import { calcularRecordatorio, estimarKmActual, intervaloEfectivo, Recordatorio } from '@taller/shared';
 import { PrismaService } from '../prisma/prisma.service';
 
 /** Forma mínima de una orden que necesita el cálculo. */
 interface OrdenParaCalculo {
   fecha: Date;
   kilometraje: number;
-  items: { tipoServicio: TipoServicio | null }[];
+  items: { tipoServicio: TipoServicio | null; intervaloKm?: number | null; intervaloMeses?: number | null }[];
 }
 
 export interface ServicioVehiculo {
   tipoServicio: TipoServicio;
   ultimo: { fecha: Date; km: number };
   recordatorio: Recordatorio | null;
+  /** true si el último trabajo tiene un intervalo propio distinto al del catálogo. */
+  personalizado: boolean;
 }
 
 @Injectable()
@@ -25,18 +27,32 @@ export class RecordatoriosService {
     const visitas = ordenes.map((o) => ({ fecha: o.fecha, km: o.kilometraje }));
     const kmEstimado = estimarKmActual(visitas, hoy);
 
-    const ultimos = new Map<number, { tipoServicio: TipoServicio; fecha: Date; km: number }>();
+    type Ultimo = { tipoServicio: TipoServicio; fecha: Date; km: number; intervaloKm: number | null; intervaloMeses: number | null };
+    const ultimos = new Map<number, Ultimo>();
     for (const o of [...ordenes].sort((a, b) => a.fecha.getTime() - b.fecha.getTime())) {
       for (const it of o.items) {
-        if (it.tipoServicio) ultimos.set(it.tipoServicio.id, { tipoServicio: it.tipoServicio, fecha: o.fecha, km: o.kilometraje });
+        if (it.tipoServicio) {
+          ultimos.set(it.tipoServicio.id, {
+            tipoServicio: it.tipoServicio,
+            fecha: o.fecha,
+            km: o.kilometraje,
+            intervaloKm: it.intervaloKm ?? null,
+            intervaloMeses: it.intervaloMeses ?? null,
+          });
+        }
       }
     }
 
-    const servicios: ServicioVehiculo[] = [...ultimos.values()].map((u) => ({
-      tipoServicio: u.tipoServicio,
-      ultimo: { fecha: u.fecha, km: u.km },
-      recordatorio: calcularRecordatorio(u.tipoServicio, { fecha: u.fecha, km: u.km }, kmEstimado, hoy),
-    }));
+    // El intervalo lo pone el último trabajo de ese tipo (según lo que se le puso); si lo dejó vacío, el catálogo.
+    const servicios: ServicioVehiculo[] = [...ultimos.values()].map((u) => {
+      const intervalo = intervaloEfectivo(u, u.tipoServicio);
+      return {
+        tipoServicio: u.tipoServicio,
+        ultimo: { fecha: u.fecha, km: u.km },
+        recordatorio: calcularRecordatorio(intervalo, { fecha: u.fecha, km: u.km }, kmEstimado, hoy),
+        personalizado: intervalo.personalizado,
+      };
+    });
 
     const peso = (s: ServicioVehiculo) => (s.recordatorio?.estado === 'LE_TOCA' ? 0 : s.recordatorio?.estado === 'PRONTO' ? 1 : 2);
     servicios.sort((a, b) => peso(a) - peso(b));
@@ -53,7 +69,7 @@ export class RecordatoriosService {
         cliente: { select: { id: true, nombre: true, telefono: true } },
         ordenes: {
           where: { estado: { not: 'ANULADA' } },
-          select: { fecha: true, kilometraje: true, items: { select: { tipoServicio: true } } },
+          select: { fecha: true, kilometraje: true, items: { select: { tipoServicio: true, intervaloKm: true, intervaloMeses: true } } },
         },
       },
     });

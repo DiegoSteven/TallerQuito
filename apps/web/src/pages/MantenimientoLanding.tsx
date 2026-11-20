@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { api } from '../api';
 import { Icono } from '../components/Iconos';
@@ -61,6 +62,7 @@ function EstadoElemento({ nuevo, pendiente }: { nuevo: boolean; pendiente: boole
 const distinto = (a: unknown, b: unknown) => JSON.stringify(a) !== JSON.stringify(b);
 
 export function MantenimientoLanding() {
+  const qc = useQueryClient();
   /**
    * Dos copias:
    * - `publicado`: lo que está guardado en la base y se ve en la landing.
@@ -116,6 +118,7 @@ export function MantenimientoLanding() {
     setMensaje(null);
     try {
       const res = await api<LandingConfig>('/landing', { method: 'PUT', body: JSON.stringify(cambios) });
+      if (cambios.taller) qc.invalidateQueries({ queryKey: ['logo-taller'] }); // el logo del menú se actualiza al instante
       setPublicado(res);
       setMensaje({ tipo: 'ok', texto: `${nombre}: publicado en la landing.` });
       setTimeout(() => setMensaje(null), 4000);
@@ -272,6 +275,39 @@ export function MantenimientoLanding() {
       servicios: publicado.servicios.filter((s) => s.id !== id),
     });
     if (res) setConfig((prev) => ({ ...prev, servicios: prev.servicios.filter((s) => s.id !== id) }));
+  }
+
+  // ─── Logo ───
+  /** Sube el logo y lo pone SOLO en el borrador; se publica con "Guardar" de contacto. */
+  function subirLogo(file: File) {
+    if (!/^image\/(png|jpeg)$/.test(file.type)) {
+      setMensaje({ tipo: 'error', texto: 'El logo debe ser PNG (recomendado, con fondo transparente) o JPG.' });
+      return;
+    }
+    setSubiendoId('logo');
+    const lector = new FileReader();
+    lector.onload = () => {
+      const img = new Image();
+      img.onload = async () => {
+        const escala = Math.min(1, 800 / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * escala);
+        canvas.height = Math.round(img.height * escala);
+        canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.92);
+        try {
+          const res = await api<{ url: string }>('/landing/upload', { method: 'POST', body: JSON.stringify({ imagenBase64: dataUrl }) });
+          setConfig((prev) => ({ ...prev, taller: { ...prev.taller, logoUrl: res.url } }));
+          setMensaje({ tipo: 'ok', texto: 'Logo listo en la vista previa. Pulse "Guardar y publicar" para usarlo en la web, el sistema y los PDF.' });
+        } catch (err) {
+          setMensaje({ tipo: 'error', texto: `No se pudo subir el logo: ${err instanceof Error ? err.message : 'error'}` });
+        } finally {
+          setSubiendoId(null);
+        }
+      };
+      img.src = lector.result as string;
+    };
+    lector.readAsDataURL(file);
   }
 
   // ─── Contacto ───
@@ -670,6 +706,57 @@ export function MantenimientoLanding() {
           <h3 className="flex items-center gap-2 font-bold text-gray-900 border-b border-gray-100 pb-2">
             Información Pública del Taller <EstadoElemento nuevo={false} pendiente={contactoPendiente} />
           </h3>
+
+          <div className="rounded-xl border border-slate-200 p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="block text-xs font-bold uppercase tracking-wider text-gray-700">Logo del taller</span>
+                <span className="text-xs text-slate-500">Se usa en la landing, en el sistema y en los PDF de órdenes e historial.</span>
+              </div>
+              <div className="flex gap-2">
+                <label className="btn btn-borde btn-sm cursor-pointer">
+                  {subiendoId === 'logo' ? 'Subiendo…' : config.taller.logoUrl ? 'Cambiar logo' : 'Subir logo'}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    className="hidden"
+                    disabled={subiendoId === 'logo'}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) subirLogo(file);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+                {config.taller.logoUrl && (
+                  <button
+                    type="button"
+                    className="btn btn-borde btn-sm text-red-700"
+                    onClick={() => setConfig((prev) => ({ ...prev, taller: { ...prev.taller, logoUrl: '' } }))}
+                  >
+                    Quitar
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-3">
+                {config.taller.logoUrl ? (
+                  <img src={config.taller.logoUrl} alt="Logo sobre fondo claro" className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <span className="text-xs text-slate-400">Sin logo: se muestra el nombre en texto</span>
+                )}
+              </div>
+              <div className="flex h-24 items-center justify-center rounded-lg bg-tinta p-3">
+                {config.taller.logoUrl ? (
+                  <img src={config.taller.logoUrl} alt="Logo sobre fondo oscuro" className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <span className="text-xs text-slate-500">Vista sobre fondo oscuro (menú del sistema)</span>
+                )}
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">Recomendado: PNG horizontal con fondo transparente, al menos 600 px de ancho.</p>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

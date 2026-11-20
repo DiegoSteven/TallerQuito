@@ -4,6 +4,8 @@ import type { Response } from 'express';
 import PdfPrinter from 'pdfmake';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { TALLER } from '@taller/shared';
+import { logoParaPdf } from '../landing/logo';
+import { PrismaService } from '../prisma/prisma.service';
 import { VehiculosModule } from '../vehiculos/vehiculos.module';
 import { VehiculosService } from '../vehiculos/vehiculos.service';
 
@@ -20,13 +22,17 @@ const km = (n: number) => n.toLocaleString('es-EC');
 @ApiBearerAuth()
 @Controller('vehiculos')
 class ReportesController {
-  constructor(private readonly vehiculos: VehiculosService) {}
+  constructor(
+    private readonly vehiculos: VehiculosService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   /** PDF del historial de un vehículo, para descargar o imprimir. */
   @ApiProduces('application/pdf')
   @Get(':id/historial.pdf')
   async historialPdf(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     const { vehiculo: v, ordenes, servicios, kmEstimado } = await this.vehiculos.historial(id);
+    const logo = await logoParaPdf(this.prisma);
     const pendientes = servicios.filter((s) => s.recordatorio && s.recordatorio.estado !== 'AL_DIA');
 
     const doc: TDocumentDefinitions = {
@@ -37,7 +43,9 @@ class ReportesController {
       content: [
         {
           columns: [
-            { stack: [{ text: 'MECÁNICA AUTOMOTRIZ', fontSize: 7, bold: true, color: '#6b7280', characterSpacing: 2 }, { text: 'SÁNCHEZ', fontSize: 20, bold: true }, { text: `${TALLER.ciudad} · ${TALLER.telefono}`, fontSize: 7, color: '#6b7280' }] },
+            logo
+              ? { stack: [{ image: logo, fit: [180, 50] }, { text: `${TALLER.ciudad} · ${TALLER.telefono}`, fontSize: 7, color: '#6b7280', margin: [0, 2, 0, 0] }] }
+              : { stack: [{ text: 'TECNICENTRO AUTOMOTRIZ', fontSize: 7, bold: true, color: '#6b7280', characterSpacing: 2 }, { text: 'SÁNCHEZ', fontSize: 20, bold: true }, { text: `${TALLER.ciudad} · ${TALLER.telefono}`, fontSize: 7, color: '#6b7280' }] },
             { text: `Historial de mantenimiento\n${fecha(new Date())}`, alignment: 'right', bold: true },
           ],
         },

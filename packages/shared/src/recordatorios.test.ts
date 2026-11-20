@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { calcularRecordatorio, estimarKmActual } from './recordatorios';
+import { calcularRecordatorio, estimarKmActual, intervaloEfectivo, proximoCambio } from './recordatorios';
 import { normalizarPlaca } from './placa';
 
 const d = (s: string) => new Date(`${s}T12:00:00Z`);
@@ -59,4 +59,14 @@ test('normaliza placas', () => {
   assert.equal(normalizarPlaca('pba1234'), 'PBA-1234');
   assert.equal(normalizarPlaca(' PBA 1234 '), 'PBA-1234');
   assert.equal(normalizarPlaca('gsd-447'), 'GSD-447');
+});
+
+test('intervalo por trabajo: gana el del trabajo, campo por campo; vacío usa el catálogo', () => {
+  const catalogo = { intervaloKm: 5000, intervaloMeses: 6 };
+  assert.deepEqual(intervaloEfectivo({ intervaloKm: 10000 }, catalogo), { intervaloKm: 10000, intervaloMeses: 6, personalizado: true });
+  assert.deepEqual(intervaloEfectivo({ intervaloKm: null, intervaloMeses: null }, catalogo), { intervaloKm: 5000, intervaloMeses: 6, personalizado: false });
+  assert.equal(intervaloEfectivo({ intervaloKm: 5000 }, catalogo).personalizado, false);
+  const p = proximoCambio({ intervaloKm: 10000, intervaloMeses: 6 }, { fecha: d('2026-11-20'), km: 148300 });
+  assert.equal(p.km, 158300);
+  assert.equal(p.fecha?.toISOString().slice(0, 7), '2027-05');
 });

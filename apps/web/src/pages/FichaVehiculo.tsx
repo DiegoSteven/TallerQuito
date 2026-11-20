@@ -18,7 +18,7 @@ interface Historial {
     cliente: { nombre: string; telefono: string | null };
   };
   kmEstimado: number | null;
-  servicios: { tipoServicio: { id: number; nombre: string }; ultimo: { fecha: string; km: number }; recordatorio: Recordatorio | null }[];
+  servicios: { tipoServicio: { id: number; nombre: string }; ultimo: { fecha: string; km: number }; recordatorio: Recordatorio | null; personalizado?: boolean }[];
   ordenes: {
     id: number;
     numero: number;
@@ -132,7 +132,14 @@ export function FichaVehiculo() {
               <tbody>
                 {servicios.map((s) => (
                   <tr key={s.tipoServicio.id} className="fila">
-                    <td className="font-semibold text-tinta">{s.tipoServicio.nombre}</td>
+                    <td className="font-semibold text-tinta">
+                      {s.tipoServicio.nombre}
+                      {s.personalizado && (
+                        <span className="chip ml-1.5 bg-amber-100 text-amber-800" title="El último trabajo tiene un intervalo propio (no el del catálogo)">
+                          intervalo propio
+                        </span>
+                      )}
+                    </td>
                     <td className="whitespace-nowrap text-slate-500">{fecha(s.ultimo.fecha)}</td>
                     <td className="whitespace-nowrap text-slate-500">{km(s.ultimo.km)} km</td>
                     <td>

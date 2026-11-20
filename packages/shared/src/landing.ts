@@ -38,6 +38,8 @@ export interface LandingConfig {
     direccion: string;
     horario: string[];
     mapsUrl: string;
+    /** Logo subido desde "Mantenimiento web" (PNG/JPG). Vacío = se muestra el nombre en texto. */
+    logoUrl?: string;
   };
   slides: SlideHero[];
   servicios: ServicioLanding[];
@@ -54,7 +56,7 @@ export const CONFIGURACION_LANDING_DEFAULT: LandingConfig = {
     email: TALLER.email,
     direccion: `${TALLER.direccion} · ${TALLER.ciudad}`,
     horario: ['Lunes a viernes · 08:00 – 18:00', 'Sábados · 08:00 – 13:00'],
-    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Mecánica Automotriz Sánchez, Av. Oswaldo Guayasamín E3-115, Cumbayá'),
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('TECNICENTRO AUTOMOTRIZ Sánchez, Av. Oswaldo Guayasamín E3-115, Cumbayá'),
   },
   slides: [
     {

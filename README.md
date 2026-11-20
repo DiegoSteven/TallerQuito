@@ -1,6 +1,6 @@
-# Mecánica Automotriz Sánchez — Órdenes de trabajo e historial (Fase 1)
+# TECNICENTRO AUTOMOTRIZ Sánchez — Órdenes de trabajo e historial (Fase 1)
 
-Sistema del taller **Mecánica Automotriz Sánchez** (Cumbayá, Quito):
+Sistema del taller **TECNICENTRO AUTOMOTRIZ Sánchez** (Cumbayá, Quito):
 
 - **Orden de trabajo digital**, igual al talonario en papel: recepción del vehículo (checklist SÍ/NO de 24 ítems, combustible, golpes marcados sobre el dibujo del carro), repuestos y mano de obra, y los 4 hitos (llegada, pedido y llegada de repuestos, entrega).
 - **PDF para imprimir y firmar** (cliente y jefe de taller), en una hoja A4, con la cláusula de autorización. Lo que aún no se llenó sale en blanco para completar a mano.
@@ -69,7 +69,8 @@ pnpm dev:db                          # PostgreSQL en localhost:5434
 cp apps/api/.env.example apps/api/.env
 pnpm db:generate
 pnpm db:migrate                      # crea las tablas
-pnpm db:seed                         # catálogo + usuario luis / taller12345
+pnpm db:seed                         # catálogo de servicios (no crea usuarios)
+pnpm crear-dueno                     # crea la cuenta del dueño (pide usuario y contraseña)
 pnpm dev:api                         # http://localhost:3000/api/docs  (Swagger)
 pnpm dev:web                         # http://localhost:5173
 
@@ -86,7 +87,8 @@ git clone <repo> taller && cd taller
 cp .env.example .env                 # completar dominio, claves y secretos
 cp infra/backup/rclone.conf.example infra/backup/rclone.conf   # credenciales de R2
 docker compose up -d --build
-docker compose exec api ./node_modules/.bin/prisma db seed   # solo la primera vez
+docker compose exec api ./node_modules/.bin/prisma db seed   # solo la primera vez (catálogo)
+docker compose exec api node prisma/crear-dueno.js           # cuenta del dueño (también sirve si olvida la clave)
 ```
 
 - El DNS de `APP_DOMAIN` debe apuntar al VPS **antes** de levantar Caddy (para el certificado).

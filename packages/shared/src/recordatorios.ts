@@ -92,3 +92,30 @@ export function calcularRecordatorio(
 
   return { estado, proximoKm, proximaFecha, kmRestantes, diasRestantes };
 }
+
+/** Intervalo propio de un trabajo (null = usar el del catálogo). */
+export interface IntervaloTrabajo {
+  intervaloKm?: number | null;
+  intervaloMeses?: number | null;
+}
+
+/**
+ * Intervalo que vale para un trabajo: el que puso el mecánico en ese trabajo (depende del carro y de lo que
+ * se le puso, p. ej. aceite sintético) y, campo por campo, si lo dejó vacío, el del catálogo.
+ */
+export function intervaloEfectivo(trabajo: IntervaloTrabajo, catalogo: IntervaloServicio): IntervaloServicio & { personalizado: boolean } {
+  const intervaloKm = trabajo.intervaloKm ?? catalogo.intervaloKm;
+  const intervaloMeses = trabajo.intervaloMeses ?? catalogo.intervaloMeses;
+  const personalizado =
+    (trabajo.intervaloKm != null && trabajo.intervaloKm !== catalogo.intervaloKm) ||
+    (trabajo.intervaloMeses != null && trabajo.intervaloMeses !== catalogo.intervaloMeses);
+  return { intervaloKm, intervaloMeses, personalizado };
+}
+
+/** Km y fecha del próximo cambio a partir de cuándo se hizo el trabajo. */
+export function proximoCambio(intervalo: IntervaloServicio, hecho: Visita): { km: number | null; fecha: Date | null } {
+  return {
+    km: intervalo.intervaloKm ? hecho.km + intervalo.intervaloKm : null,
+    fecha: intervalo.intervaloMeses ? sumarMeses(hecho.fecha, intervalo.intervaloMeses) : null,
+  };
+}

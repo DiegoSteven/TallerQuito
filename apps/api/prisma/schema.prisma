@@ -150,6 +150,10 @@ model OrdenItem {
   descripcion    String
   cantidad       Decimal  @default(1) @db.Decimal(10, 2)
   precioUnitario Decimal  @default(0) @db.Decimal(10, 2)
+  /// Próximo cambio de ESTE trabajo (depende del carro y de lo que se puso, p. ej. aceite sintético).
+  /// Si es null, se usa el intervalo del catálogo.
+  intervaloKm    Int?
+  intervaloMeses Int?
 
   orden        OrdenTrabajo  @relation(fields: [ordenId], references: [id], onDelete: Cascade)
   tipoServicio TipoServicio? @relation(fields: [tipoServicioId], references: [id])

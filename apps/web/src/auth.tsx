@@ -9,9 +9,16 @@ export interface Usuario {
   rol: Rol;
 }
 
+export interface Sesion {
+  token: string;
+  usuario: Usuario;
+}
+
 interface AuthCtx {
   usuario: Usuario | null;
   login: (usuario: string, password: string) => Promise<void>;
+  /** Entra con una sesión ya creada (p. ej. al terminar la configuración inicial). */
+  entrar: (s: Sesion) => void;
   logout: () => void;
 }
 
@@ -29,11 +36,7 @@ function leerUsuario(): Usuario | null {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(leerUsuario);
 
-  const login = async (u: string, password: string) => {
-    const r = await api<{ token: string; usuario: Usuario }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ usuario: u, password }),
-    });
+  const entrar = (r: Sesion) => {
     token.set(r.token);
     try {
       localStorage.setItem(USER_KEY, JSON.stringify(r.usuario));
@@ -43,12 +46,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUsuario(r.usuario);
   };
 
+  const login = async (u: string, password: string) => {
+    entrar(await api<Sesion>('/auth/login', { method: 'POST', body: JSON.stringify({ usuario: u, password }) }));
+  };
+
   const logout = () => {
     token.set(null);
     setUsuario(null);
   };
 
-  return <Ctx.Provider value={{ usuario, login, logout }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ usuario, login, entrar, logout }}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {

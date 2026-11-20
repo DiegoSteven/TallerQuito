@@ -20,6 +20,7 @@ import { formatoNumeroOrden, validarChecklist, validarMarcas } from '@taller/sha
 import type { Response } from 'express';
 import { Roles, UsuarioActual, UsuarioSesion } from '../common/decorators';
 import { PrismaService } from '../prisma/prisma.service';
+import { logoParaPdf } from '../landing/logo';
 import { generarPdfOrden } from './orden-pdf';
 import { ActualizarOrdenDto, CrearOrdenDto, ItemOrdenDto, ListarOrdenesDto } from './ordenes.dto';
 
@@ -212,7 +213,10 @@ export class OrdenesService {
 @ApiBearerAuth()
 @Controller('ordenes')
 class OrdenesController {
-  constructor(private readonly ordenes: OrdenesService) {}
+  constructor(
+    private readonly ordenes: OrdenesService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   /** Lista órdenes. `?estado=ABIERTA` = carros que están ahora en el taller. */
   @Get()
@@ -261,7 +265,7 @@ class OrdenesController {
   @Get(':id/orden.pdf')
   async pdf(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     const orden = await this.ordenes.obtener(id);
-    const pdf = generarPdfOrden(orden);
+    const pdf = generarPdfOrden(orden, await logoParaPdf(this.prisma));
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="Orden_${formatoNumeroOrden(orden.numero)}_${orden.vehiculo.placa}.pdf"`);
     pdf.pipe(res);

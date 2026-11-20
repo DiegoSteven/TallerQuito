@@ -1,6 +1,8 @@
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ROL_ETIQUETA } from '@taller/shared';
+import { ROL_ETIQUETA, type LandingConfig } from '@taller/shared';
+import { api } from '../api';
 import { useAuth } from '../auth';
 import { Icono, type NombreIcono } from './Iconos';
 
@@ -50,18 +52,41 @@ function tituloDeRuta(ruta: string): string {
   if (ruta.startsWith('/estadisticas')) return 'Estadísticas';
   if (ruta.startsWith('/catalogo')) return 'Catálogo de servicios';
   if (ruta.startsWith('/usuarios')) return 'Usuarios';
+  if (ruta.startsWith('/mi-cuenta')) return 'Mi cuenta';
   if (ruta.startsWith('/importar')) return 'Importar desde Excel';
   if (ruta.startsWith('/landing')) return 'Mantenimiento web';
   return 'Sistema del taller';
 }
 
+/** Logo subido en "Mantenimiento web" (la consulta es pública y se comparte en toda la app). */
+export function useLogoTaller() {
+  const { data } = useQuery({
+    queryKey: ['logo-taller'],
+    queryFn: () => api<LandingConfig>('/landing'),
+    staleTime: 5 * 60_000,
+    select: (c) => c.taller.logoUrl || null,
+  });
+  return data ?? null;
+}
+
 export function Logo({ sub, claro = false }: { sub?: string; claro?: boolean }) {
+  const logo = useLogoTaller();
+  if (logo) {
+    return (
+      <div className="leading-none">
+        <img src={logo} alt="Logo del taller" className="max-h-14 max-w-[210px] object-contain" />
+        {sub && (
+          <div className={`mt-2 font-display text-[10px] font-bold tracking-[0.2em] ${claro ? 'text-slate-500' : 'text-slate-400'}`}>{sub}</div>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="leading-none">
       <div
         className={`font-display text-[9px] font-bold tracking-[0.28em] ${claro ? 'text-slate-400' : 'text-slate-500'}`}
       >
-        MECÁNICA AUTOMOTRIZ
+        TECNICENTRO AUTOMOTRIZ
       </div>
       <div
         className={`mt-1 font-display text-[26px] font-black leading-none tracking-[0.08em] ${claro ? 'text-white' : 'text-tinta'}`}
@@ -167,12 +192,17 @@ export function Layout() {
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marca font-display text-sm font-black text-white">
               {iniciales || 'MS'}
             </span>
-            <div className="min-w-0 flex-1">
+            <NavLink
+              to="/mi-cuenta"
+              onClick={() => setAbierto(false)}
+              className="min-w-0 flex-1 rounded-lg hover:opacity-90"
+              title="Mi cuenta: cambiar contraseña"
+            >
               <div className="truncate font-display text-sm font-bold text-white">{usuario?.nombre}</div>
               <div className="truncate text-[11px] text-slate-400">
-                {usuario ? ROL_ETIQUETA[usuario.rol] : 'Sesión'}
+                {usuario ? ROL_ETIQUETA[usuario.rol] : 'Sesión'} · Mi cuenta
               </div>
-            </div>
+            </NavLink>
             <button
               type="button"
               onClick={cerrarSesion}
@@ -234,7 +264,7 @@ export function Layout() {
         <footer className="border-t border-slate-200/80 px-4 py-4 md:px-8">
           <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span>
-              © {new Date().getFullYear()} Mecánica Automotriz Sánchez · Cumbayá, Quito
+              © {new Date().getFullYear()} TECNICENTRO AUTOMOTRIZ Sánchez · Cumbayá, Quito
             </span>
             <span className="font-display font-semibold uppercase tracking-[0.14em]">
               Historial digital garantizado

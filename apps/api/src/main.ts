@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import express, { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { PrismaErroresFilter } from './common/prisma-errores.filter';
 import { carpetaFotos } from './landing/fotos';
 
 /**
@@ -41,10 +42,11 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.use(helmet());
   app.enableShutdownHooks();
+  app.useGlobalFilters(new PrismaErroresFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
 
   const config = new DocumentBuilder()
-    .setTitle('Mecánica Automotriz Sánchez — API')
+    .setTitle('TECNICENTRO AUTOMOTRIZ Sánchez — API')
     .setDescription('Fase 1: órdenes de trabajo, clientes, vehículos, catálogo, recordatorios y landing.')
     .setVersion('0.1.0')
     .addBearerAuth()

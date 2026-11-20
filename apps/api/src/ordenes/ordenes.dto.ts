@@ -27,6 +27,9 @@ export class ItemOrdenDto {
   @IsString() @MinLength(1) descripcion: string;
   @IsNumber({ maxDecimalPlaces: 2 }) @Min(0.01) cantidad: number;
   @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) precioUnitario: number;
+  /** Próximo cambio de este trabajo según el carro / lo que se puso (null = usar el catálogo). */
+  @IsOptional() @IsInt() @Min(1) intervaloKm?: number | null;
+  @IsOptional() @IsInt() @Min(1) intervaloMeses?: number | null;
 }
 
 export class CrearOrdenDto {
