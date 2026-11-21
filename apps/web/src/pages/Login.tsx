@@ -152,7 +152,7 @@ export function Login() {
           </div>
 
           <p className="mt-5 text-center text-xs text-slate-400">
-            Acceso exclusivo del personal de TECNICENTRO AUTOMOTRIZ Sánchez.
+            Acceso exclusivo del personal de MECÁNICA AUTOMOTRIZSánchez.
           </p>
         </div>
       </div>

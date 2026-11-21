@@ -1,6 +1,6 @@
 /** Datos del taller: aparecen en el sistema, en los PDF y en la landing. */
 export const TALLER = {
-  nombre: 'TECNICENTRO AUTOMOTRIZ SÁNCHEZ',
+  nombre: 'MECÁNICA AUTOMOTRIZSÁNCHEZ',
   nombreCorto: 'Mecánica Sánchez',
   lema: 'Su mecánica de confianza',
   direccion: 'Av. Oswaldo Guayasamín E3-115 y Manuel Betancourt',

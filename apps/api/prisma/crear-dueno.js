@@ -41,7 +41,7 @@ async function main() {
   }
   const prisma = new PrismaClient();
   try {
-    console.log('\n=== Cuenta de dueño · TECNICENTRO AUTOMOTRIZ Sánchez ===\n');
+    console.log('\n=== Cuenta de dueño · MECÁNICA AUTOMOTRIZSánchez ===\n');
 
     const usuario = (await preguntar('Usuario para ingresar (ej: luis.sanchez): ')).toLowerCase();
     if (!/^[a-z0-9._-]{3,30}$/.test(usuario)) throw new Error('Usuario inválido: minúsculas, números, punto o guion (3 a 30).');

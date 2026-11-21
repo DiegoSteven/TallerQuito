@@ -21,3 +21,13 @@ AGENTS.md
 # Fotos y datos locales de la landing (en el VPS van en un volumen de Docker)
 apps/api/uploads/
 apps/api/data/
+
+# Respaldos en la PC del taller: el ejecutable y las credenciales no van al repo
+infra/pc-taller/rclone.exe
+infra/pc-taller/rclone.conf
+infra/pc-taller/llave_respaldos
+infra/pc-taller/llave_respaldos.pub
+
+# Excels del taller y reportes de importación: tienen datos personales de clientes (no van al repo)
+*.xlsx
+!apps/**/plantilla*.xlsx

@@ -46,7 +46,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
 
   const config = new DocumentBuilder()
-    .setTitle('TECNICENTRO AUTOMOTRIZ Sánchez — API')
+    .setTitle('MECÁNICA AUTOMOTRIZSánchez — API')
     .setDescription('Fase 1: órdenes de trabajo, clientes, vehículos, catálogo, recordatorios y landing.')
     .setVersion('0.1.0')
     .addBearerAuth()

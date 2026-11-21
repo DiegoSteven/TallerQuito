@@ -120,7 +120,7 @@ export function MantenimientoLanding() {
       const res = await api<LandingConfig>('/landing', { method: 'PUT', body: JSON.stringify(cambios) });
       if (cambios.taller) qc.invalidateQueries({ queryKey: ['logo-taller'] }); // el logo del menú se actualiza al instante
       setPublicado(res);
-      setMensaje({ tipo: 'ok', texto: `${nombre}: publicado en la landing.` });
+      setMensaje({ tipo: 'ok', texto: `${nombre}: publicado. La página pública se actualiza en 1 a 2 minutos.` });
       setTimeout(() => setMensaje(null), 4000);
       return res;
     } catch (err: unknown) {

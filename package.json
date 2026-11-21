@@ -17,6 +17,7 @@
     "db:migrate": "pnpm --filter @taller/api prisma:migrate",
     "db:seed": "pnpm --filter @taller/api prisma:seed",
     "crear-dueno": "pnpm --filter @taller/api crear-dueno",
+    "importar-clientes": "pnpm --filter @taller/api importar-clientes",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck"

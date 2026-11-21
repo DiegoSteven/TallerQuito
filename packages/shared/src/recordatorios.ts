@@ -15,7 +15,8 @@ export interface IntervaloServicio {
 
 export interface Visita {
   fecha: Date;
-  km: number;
+  /** null = no se anotó el km (historial viejo importado). */
+  km: number | null;
 }
 
 export interface Umbrales {
@@ -50,7 +51,9 @@ export function sumarMeses(fecha: Date, meses: number): Date {
  * Km estimado a la fecha `hoy` según el promedio del vehículo.
  * Necesita al menos dos visitas con km distinto; si no, devuelve el último km.
  */
-export function estimarKmActual(visitas: Visita[], hoy: Date): number | null {
+export function estimarKmActual(todas: Visita[], hoy: Date): number | null {
+  // Las visitas sin km no sirven para estimar.
+  const visitas = todas.filter((v): v is Visita & { km: number } => v.km != null);
   if (visitas.length === 0) return null;
   const orden = [...visitas].sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
   const primera = orden[0];
@@ -73,7 +76,8 @@ export function calcularRecordatorio(
   const { intervaloKm, intervaloMeses } = servicio;
   if (!intervaloKm && !intervaloMeses) return null;
 
-  const proximoKm = intervaloKm ? ultimo.km + intervaloKm : null;
+  // Si ese trabajo no tiene km anotado, el aviso sale solo por fecha.
+  const proximoKm = intervaloKm && ultimo.km != null ? ultimo.km + intervaloKm : null;
   const proximaFecha = intervaloMeses ? sumarMeses(ultimo.fecha, intervaloMeses) : null;
 
   const kmRestantes = proximoKm !== null && kmActual !== null ? proximoKm - kmActual : null;
@@ -115,7 +119,7 @@ export function intervaloEfectivo(trabajo: IntervaloTrabajo, catalogo: Intervalo
 /** Km y fecha del próximo cambio a partir de cuándo se hizo el trabajo. */
 export function proximoCambio(intervalo: IntervaloServicio, hecho: Visita): { km: number | null; fecha: Date | null } {
   return {
-    km: intervalo.intervaloKm ? hecho.km + intervalo.intervaloKm : null,
+    km: intervalo.intervaloKm && hecho.km != null ? hecho.km + intervalo.intervaloKm : null,
     fecha: intervalo.intervaloMeses ? sumarMeses(hecho.fecha, intervalo.intervaloMeses) : null,
   };
 }

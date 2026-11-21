@@ -57,7 +57,11 @@ export class VehiculosService {
         ordenes: {
           where: { estado: { not: 'ANULADA' } },
           orderBy: { fecha: 'desc' },
-          include: { items: { include: { tipoServicio: true } }, mecanico: { select: { id: true, nombre: true } } },
+          include: {
+            items: { include: { tipoServicio: true } },
+            mecanico: { select: { id: true, nombre: true } },
+            cliente: { select: { id: true, nombre: true } },
+          },
         },
       },
     });

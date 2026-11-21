@@ -75,7 +75,7 @@ export function OrdenDetalle() {
   if (error || !o) return <p className="text-sm font-semibold text-red-700">{(error as Error)?.message ?? 'Orden no encontrada'}</p>;
 
   const v = o.vehiculo;
-  const c = v.cliente;
+  const c = o.cliente ?? v.cliente; // quien trajo el carro en esta orden
   const abierta = o.estado === 'ABIERTA';
   const puedeEditar = usuario?.rol !== 'MECANICO' && (abierta || (o.estado === 'CERRADA' && usuario?.rol === 'DUENO'));
   const repuestos = o.items.filter((i) => i.tipo === 'REPUESTO');

@@ -60,6 +60,8 @@ export interface Orden {
   carroceria: 'AUTO' | 'CAMIONETA' | null;
   danios: MarcaDanio[] | null;
   vehiculo: Vehiculo;
+  /** Quién trajo el carro en esta orden (puede no ser el dueño actual). */
+  cliente: Cliente | null;
   items: ItemOrden[];
   creadoPor: { nombre: string } | null;
 }

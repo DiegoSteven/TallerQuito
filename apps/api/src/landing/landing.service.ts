@@ -14,6 +14,7 @@ const ARCHIVO_ANTERIOR = path.resolve(process.cwd(), 'data', 'landing-config.jso
 @Injectable()
 export class LandingService {
   private readonly logger = new Logger(LandingService.name);
+  private reconstruccionPendiente?: NodeJS.Timeout;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -53,7 +54,24 @@ export class LandingService {
       create: { clave: CLAVE, datos },
       update: { datos, actualizadoEn: new Date() },
     });
+    this.programarReconstruccionLanding();
     return combinada;
+  }
+
+  /**
+   * La landing pública es un sitio estático (Cloudflare Pages): hay que reconstruirla para que muestre lo guardado.
+   * Se espera 1 minuto desde el último cambio para juntar varios guardados en una sola reconstrucción.
+   */
+  private programarReconstruccionLanding() {
+    const hook = process.env.LANDING_DEPLOY_HOOK;
+    if (!hook) return;
+    clearTimeout(this.reconstruccionPendiente);
+    this.reconstruccionPendiente = setTimeout(() => {
+      fetch(hook, { method: 'POST' })
+        .then((r) => this.logger.log(`Reconstrucción de la landing solicitada (HTTP ${r.status}).`))
+        .catch((e: Error) => this.logger.warn(`No se pudo avisar a Cloudflare Pages: ${e.message}`));
+    }, 60_000);
+    this.reconstruccionPendiente.unref();
   }
 
   private normalizarConfig(parsed: Partial<LandingConfig>): LandingConfig {

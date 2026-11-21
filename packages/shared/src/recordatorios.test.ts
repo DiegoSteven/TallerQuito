@@ -70,3 +70,11 @@ test('intervalo por trabajo: gana el del trabajo, campo por campo; vacío usa el
   assert.equal(p.km, 158300);
   assert.equal(p.fecha?.toISOString().slice(0, 7), '2027-05');
 });
+
+test('historial sin km: no se usa para estimar y el aviso sale solo por fecha', () => {
+  assert.equal(estimarKmActual([{ fecha: d('2024-01-10'), km: null }, { fecha: d('2025-01-10'), km: 90000 }], d('2026-01-10')), 90000);
+  assert.equal(estimarKmActual([{ fecha: d('2024-01-10'), km: null }], d('2026-01-10')), null);
+  const r = calcularRecordatorio({ intervaloKm: 5000, intervaloMeses: 6 }, { fecha: d('2024-01-10'), km: null }, 90000, d('2026-01-10'));
+  assert.equal(r?.proximoKm, null);
+  assert.equal(r?.estado, 'LE_TOCA');
+});

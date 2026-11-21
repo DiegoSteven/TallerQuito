@@ -56,7 +56,7 @@ export const CONFIGURACION_LANDING_DEFAULT: LandingConfig = {
     email: TALLER.email,
     direccion: `${TALLER.direccion} · ${TALLER.ciudad}`,
     horario: ['Lunes a viernes · 08:00 – 18:00', 'Sábados · 08:00 – 13:00'],
-    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('TECNICENTRO AUTOMOTRIZ Sánchez, Av. Oswaldo Guayasamín E3-115, Cumbayá'),
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('MECÁNICA AUTOMOTRIZSánchez, Av. Oswaldo Guayasamín E3-115, Cumbayá'),
   },
   slides: [
     {

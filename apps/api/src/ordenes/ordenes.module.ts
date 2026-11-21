@@ -26,6 +26,8 @@ import { ActualizarOrdenDto, CrearOrdenDto, ItemOrdenDto, ListarOrdenesDto } fro
 
 const INCLUIR_DETALLE = {
   vehiculo: { include: { cliente: true } },
+  /** Quién trajo el carro en esta orden (puede no ser el dueño actual del vehículo). */
+  cliente: true,
   items: { include: { tipoServicio: true }, orderBy: { id: 'asc' } },
   mecanico: { select: { id: true, nombre: true } },
   creadoPor: { select: { id: true, nombre: true } },
@@ -58,7 +60,11 @@ export class OrdenesService {
       where: { vehiculoId, estado: { not: 'ANULADA' }, ...(excluirOrdenId ? { id: { not: excluirOrdenId } } : {}) },
       _max: { kilometraje: true },
     });
-    const ultimo = max._max.kilometraje;
+    // Sin órdenes previas (vehículo importado del Excel): se compara con el último km que traía el Excel.
+    const ultimo =
+      max._max.kilometraje ??
+      (await this.prisma.vehiculo.findUnique({ where: { id: vehiculoId }, select: { kmActual: true } }))?.kmActual ??
+      null;
     if (ultimo !== null && km < ultimo) {
       throw new BadRequestException(
         `El kilometraje (${km}) es menor al último registrado (${ultimo}). ` +
@@ -83,7 +89,10 @@ export class OrdenesService {
       porPagina,
       datos: await tx.ordenTrabajo.findMany({
         where,
-        include: { vehiculo: { include: { cliente: { select: { id: true, nombre: true, telefono: true } } } } },
+        include: {
+          vehiculo: { include: { cliente: { select: { id: true, nombre: true, telefono: true } } } },
+          cliente: { select: { id: true, nombre: true, telefono: true } },
+        },
         orderBy: [{ fecha: 'desc' }, { numero: 'desc' }],
         skip: (pagina - 1) * porPagina,
         take: porPagina,
@@ -108,6 +117,7 @@ export class OrdenesService {
       const orden = await tx.ordenTrabajo.create({
         data: {
           vehiculoId: dto.vehiculoId,
+          clienteId: vehiculo.clienteId,
           mecanicoId: dto.mecanicoId,
           creadoPorId: usuario.id,
           fecha: new Date(fecha),

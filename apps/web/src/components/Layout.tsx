@@ -264,7 +264,7 @@ export function Layout() {
         <footer className="border-t border-slate-200/80 px-4 py-4 md:px-8">
           <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span>
-              © {new Date().getFullYear()} TECNICENTRO AUTOMOTRIZ Sánchez · Cumbayá, Quito
+              © {new Date().getFullYear()} MECÁNICA AUTOMOTRIZSánchez · Cumbayá, Quito
             </span>
             <span className="font-display font-semibold uppercase tracking-[0.14em]">
               Historial digital garantizado

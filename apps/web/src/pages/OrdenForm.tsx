@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { normalizarPlaca, proximoCambio, type Carroceria, type ChecklistRecepcion, type MarcaDanio, type TipoDanio } from '@taller/shared';
-import { Fragment, useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api';
 import { Icono } from '../components/Iconos';
@@ -294,8 +294,8 @@ export function OrdenForm() {
   }
 
   /**
-   * Segunda línea de un trabajo del catálogo: cada cuánto es el próximo cambio para ESTE carro
-   * (p. ej. aceite sintético cada 10.000 km). Viene con el valor del catálogo y se puede ajustar.
+   * Próximo cambio de un trabajo del catálogo: cada cuánto, para ESTE carro (p. ej. aceite sintético cada 10.000 km).
+   * Viene con el valor del catálogo y se puede ajustar.
    * Es una función (no un componente) para que los inputs no pierdan el foco al escribir.
    */
   const filaProximo = (f: FilaItem) => {
@@ -309,121 +309,129 @@ export function OrdenForm() {
     const propio =
       (f.intervaloKm !== '' && Number(f.intervaloKm) !== servicio?.intervaloKm) ||
       (f.intervaloMeses !== '' && Number(f.intervaloMeses) !== servicio?.intervaloMeses);
-    const corto = 'w-24 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-marca focus:outline-none';
+    const corto = 'rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-base md:py-1 md:text-sm focus:border-marca focus:outline-none';
     return (
-      <tr>
-        <td colSpan={6} className="px-1 pt-0 pb-2">
-          <div className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
-            <span className="font-bold text-tinta">Próximo cambio:</span>
-            cada
-            <input className={corto} inputMode="numeric" placeholder="km" value={f.intervaloKm} onChange={(e) => cambiarFila(f.clave, { intervaloKm: e.target.value.replace(/\D/g, '') })} />
-            km ·
-            <input className={`${corto} w-16`} inputMode="numeric" placeholder="meses" value={f.intervaloMeses} onChange={(e) => cambiarFila(f.clave, { intervaloMeses: e.target.value.replace(/\D/g, '') })} />
-            meses
-            {proximo && kilometraje && <span className="font-semibold text-marca">→ {proximo}</span>}
-            {propio && (
-              <button
-                type="button"
-                className="ml-auto text-slate-500 underline hover:text-marca"
-                title={`Catálogo: ${servicio?.intervaloKm ?? '—'} km · ${servicio?.intervaloMeses ?? '—'} meses`}
-                onClick={() =>
-                  cambiarFila(f.clave, {
-                    intervaloKm: servicio?.intervaloKm ? String(servicio.intervaloKm) : '',
-                    intervaloMeses: servicio?.intervaloMeses ? String(servicio.intervaloMeses) : '',
-                  })
-                }
-              >
-                usar catálogo
-              </button>
-            )}
-          </div>
-        </td>
-      </tr>
+      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600 md:text-xs">
+        <span className="w-full font-bold text-tinta md:w-auto">Próximo cambio:</span>
+        <span>cada</span>
+        <input className={`${corto} w-24`} inputMode="numeric" placeholder="km" value={f.intervaloKm} onChange={(e) => cambiarFila(f.clave, { intervaloKm: e.target.value.replace(/\D/g, '') })} />
+        <span>km ·</span>
+        <input className={`${corto} w-16`} inputMode="numeric" placeholder="—" value={f.intervaloMeses} onChange={(e) => cambiarFila(f.clave, { intervaloMeses: e.target.value.replace(/\D/g, '') })} />
+        <span>meses</span>
+        {proximo && kilometraje && <span className="w-full font-semibold text-marca md:w-auto">→ {proximo}</span>}
+        {propio && (
+          <button
+            type="button"
+            className="text-slate-500 underline hover:text-marca md:ml-auto"
+            title={`Catálogo: ${servicio?.intervaloKm ?? '—'} km · ${servicio?.intervaloMeses ?? '—'} meses`}
+            onClick={() =>
+              cambiarFila(f.clave, {
+                intervaloKm: servicio?.intervaloKm ? String(servicio.intervaloKm) : '',
+                intervaloMeses: servicio?.intervaloMeses ? String(servicio.intervaloMeses) : '',
+              })
+            }
+          >
+            usar catálogo
+          </button>
+        )}
+      </div>
     );
   };
 
+  /**
+   * Repuestos / mano de obra. En celular cada ítem es una tarjeta con los campos apilados (cómodo para el dedo);
+   * desde tablet en adelante, las mismas piezas se acomodan en columnas como una tabla.
+   */
+  const COLUMNAS = 'md:grid-cols-[minmax(0,1fr)_12rem_4.5rem_6.5rem_5.5rem_2.5rem]';
+  const etiquetaMovil = 'mb-1 block text-[11px] font-bold uppercase tracking-wide text-slate-500 md:hidden';
+
   const tablaFilas = (tipo: TipoItem, lista: FilaItem[]) => (
     <div>
-      <div className="overflow-x-auto">
-        <table className="tabla min-w-[520px]">
-          <thead>
-            <tr>
-              <th>{tipo === 'REPUESTO' ? 'Repuesto' : 'Trabajo'}</th>
-              <th className="w-52">Servicio del catálogo</th>
-              <th className="w-16">Cant.</th>
-              <th className="w-24">P. unit.</th>
-              <th className="w-20 text-right">Valor</th>
-              <th className="w-8" />
-            </tr>
-          </thead>
-          <tbody>
-            {lista.map((f) => (
-              <Fragment key={f.clave}>
-              <tr className="border-t border-gray-100">
-                <td className="p-1">
-                  <input
-                    className={INPUT}
-                    value={f.descripcion}
-                    placeholder={tipo === 'REPUESTO' ? 'Ej: Kit banda de distribución' : 'Ej: Cambio de banda y tensor'}
-                    onChange={(e) => cambiarFila(f.clave, { descripcion: e.target.value })}
-                  />
-                </td>
-                <td className="p-1">
-                  <select
-                    className={INPUT}
-                    value={f.tipoServicioId}
-                    title="Sirve para el historial y los recordatorios"
-                    onChange={(e) => {
-                      const servicio = catalogo.data?.find((c) => String(c.id) === e.target.value);
-                      cambiarFila(f.clave, {
-                        tipoServicioId: e.target.value,
-                        ...(!f.descripcion && servicio ? { descripcion: servicio.nombre } : {}),
-                        // Se proponen los intervalos del catálogo; el mecánico los ajusta según lo que puso.
-                        intervaloKm: servicio?.intervaloKm ? String(servicio.intervaloKm) : '',
-                        intervaloMeses: servicio?.intervaloMeses ? String(servicio.intervaloMeses) : '',
-                      });
-                    }}
-                  >
-                    <option value="">—</option>
-                    {catalogo.data?.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="p-1">
-                  <input className={INPUT} inputMode="decimal" value={f.cantidad} onChange={(e) => cambiarFila(f.clave, { cantidad: e.target.value })} />
-                </td>
-                <td className="p-1">
-                  <input
-                    className={INPUT}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={f.precioUnitario}
-                    onChange={(e) => cambiarFila(f.clave, { precioUnitario: e.target.value })}
-                  />
-                </td>
-                <td className="p-1 text-right font-semibold">{dinero(valorFila(f))}</td>
-                <td className="p-1">
-                  <button
-                    type="button"
-                    aria-label="Quitar fila"
-                    className="rounded px-2 py-1 text-gray-400 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => setFilas(filas.filter((x) => x.clave !== f.clave))}
-                  >
-                    ✕
-                  </button>
-                </td>
-              </tr>
-              {f.tipoServicioId && filaProximo(f)}
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
+      {lista.length > 0 && (
+        <div className={`hidden gap-2 border-b border-slate-200 px-1 pb-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-500 md:grid ${COLUMNAS}`}>
+          <span>{tipo === 'REPUESTO' ? 'Repuesto' : 'Trabajo'}</span>
+          <span>Servicio del catálogo</span>
+          <span>Cant.</span>
+          <span>P. unit.</span>
+          <span className="text-right">Valor</span>
+          <span />
+        </div>
+      )}
+      <div className="space-y-3 md:space-y-0">
+        {lista.map((f, n) => (
+          <div key={f.clave} className="rounded-xl border border-slate-200 p-3 md:rounded-none md:border-0 md:border-b md:border-slate-100 md:px-1 md:py-2">
+            <div className={`grid grid-cols-2 items-center gap-2 ${COLUMNAS}`}>
+              <label className="col-span-2 md:col-span-1">
+                <span className={etiquetaMovil}>
+                  {tipo === 'REPUESTO' ? 'Repuesto' : 'Trabajo'} {n + 1}
+                </span>
+                <input
+                  className={INPUT}
+                  value={f.descripcion}
+                  placeholder={tipo === 'REPUESTO' ? 'Ej: Kit banda de distribución' : 'Ej: Cambio de banda y tensor'}
+                  onChange={(e) => cambiarFila(f.clave, { descripcion: e.target.value })}
+                />
+              </label>
+              <label className="col-span-2 md:col-span-1">
+                <span className={etiquetaMovil}>Servicio del catálogo (para recordatorios)</span>
+                <select
+                  className={INPUT}
+                  value={f.tipoServicioId}
+                  title="Sirve para el historial y los recordatorios"
+                  onChange={(e) => {
+                    const servicio = catalogo.data?.find((c) => String(c.id) === e.target.value);
+                    cambiarFila(f.clave, {
+                      tipoServicioId: e.target.value,
+                      ...(!f.descripcion && servicio ? { descripcion: servicio.nombre } : {}),
+                      // Se proponen los intervalos del catálogo; el mecánico los ajusta según lo que puso.
+                      intervaloKm: servicio?.intervaloKm ? String(servicio.intervaloKm) : '',
+                      intervaloMeses: servicio?.intervaloMeses ? String(servicio.intervaloMeses) : '',
+                    });
+                  }}
+                >
+                  <option value="">—</option>
+                  {catalogo.data?.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span className={etiquetaMovil}>Cantidad</span>
+                <input className={INPUT} inputMode="decimal" value={f.cantidad} onChange={(e) => cambiarFila(f.clave, { cantidad: e.target.value })} />
+              </label>
+              <label>
+                <span className={etiquetaMovil}>Precio unitario</span>
+                <input
+                  className={INPUT}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={f.precioUnitario}
+                  onChange={(e) => cambiarFila(f.clave, { precioUnitario: e.target.value })}
+                />
+              </label>
+              <div className="col-span-2 flex items-center justify-between gap-2 md:contents">
+                <span className="font-display font-bold text-tinta md:text-right">
+                  <span className="mr-1 text-xs font-semibold text-slate-500 md:hidden">Valor</span>
+                  {dinero(valorFila(f))}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Quitar"
+                  className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-400 hover:bg-red-50 hover:text-red-700 md:px-2 md:py-1"
+                  onClick={() => setFilas(filas.filter((x) => x.clave !== f.clave))}
+                >
+                  <span className="md:hidden">Quitar </span>✕
+                </button>
+              </div>
+            </div>
+            {f.tipoServicioId && filaProximo(f)}
+          </div>
+        ))}
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <button type="button" className="btn btn-borde btn-sm" onClick={() => setFilas([...filas, filaNueva(tipo)])}>
+        <button type="button" className="btn btn-borde btn-sm w-full sm:w-auto" onClick={() => setFilas([...filas, filaNueva(tipo)])}>
           <Icono nombre="mas" className="h-3.5 w-3.5" />
           Agregar {tipo === 'REPUESTO' ? 'repuesto' : 'trabajo'}
         </button>
@@ -500,7 +508,7 @@ export function OrdenForm() {
           </div>
         </div>
 
-        <fieldset disabled={datosBloqueados} className="mt-4 grid gap-4 disabled:opacity-50 lg:grid-cols-2">
+        <fieldset disabled={datosBloqueados} className="mt-4 grid min-w-0 gap-4 disabled:opacity-50 lg:grid-cols-2">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
             <Campo etiqueta="Marca">
               <input className={INPUT} value={veh.marca} onChange={(e) => setVeh({ ...veh, marca: e.target.value })} />
@@ -547,7 +555,7 @@ export function OrdenForm() {
         </fieldset>
       </Tarjeta>
 
-      <fieldset disabled={datosBloqueados} className="disabled:opacity-50">
+      <fieldset disabled={datosBloqueados} className="min-w-0 disabled:opacity-50">
         <Tarjeta titulo="Llegada">
           <div className="grid gap-3 md:grid-cols-4">
             <Campo etiqueta="Kilómetros *">
@@ -598,19 +606,19 @@ export function OrdenForm() {
         <div className="mr-auto">
           <span className="text-sm text-slate-500">Total </span>
           <b className="font-display text-2xl font-black text-marca">{dinero(suma(filas))}</b>
-          <span className="ml-3 text-xs text-slate-500">
+          <span className="ml-3 hidden text-xs text-slate-500 sm:inline">
             Repuestos {dinero(suma(repuestos))} · Mano de obra {dinero(suma(manoObra))}
           </span>
         </div>
         {error && <p className="w-full rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 md:order-first">{error}</p>}
-        <button type="submit" disabled={guardando} className="btn btn-borde">
+        <button type="submit" disabled={guardando} className="btn btn-borde flex-1 sm:flex-none">
           Guardar
         </button>
         <button
           type="button"
           disabled={guardando}
           onClick={(e) => guardar(e as unknown as FormEvent, true)}
-          className="btn btn-marca"
+          className="btn btn-marca flex-[2] sm:flex-none"
         >
           <Icono nombre="imprimir" className="h-4 w-4" />
           {guardando ? 'Guardando…' : 'Guardar e imprimir'}

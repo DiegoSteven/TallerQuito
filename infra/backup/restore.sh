@@ -2,8 +2,7 @@
 # Restaura un respaldo.  ⚠ Reemplaza los datos actuales.
 # Uso (desde el servidor):
 #   docker compose exec backup restore.sh /backups/diarios/taller_2026-11-20_0300.dump
-# Para descargar uno remoto primero:
-#   docker compose exec backup rclone --config /config/rclone/rclone.conf copy "$BACKUP_REMOTE/diarios/<archivo>" /backups/restaurar/
+# Si el respaldo viene de la PC del taller, súbalo primero a backups/restaurar/ (ver infra/pc-taller/LEEME.md).
 set -euo pipefail
 
 ARCHIVO="${1:?Indique el archivo .dump a restaurar}"

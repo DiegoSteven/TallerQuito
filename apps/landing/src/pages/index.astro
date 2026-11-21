@@ -2,7 +2,7 @@
 import { CONFIGURACION_LANDING_DEFAULT, type LandingConfig } from '@taller/shared';
 
 // Dirección de la API del taller. En local: http://localhost:3000. En producción se define al construir:
-//   PUBLIC_API_URL=https://app.mecanicasanchez.com pnpm --filter @taller/landing build
+//   PUBLIC_API_URL=https://app.tecnicentrosanchez.com pnpm --filter @taller/landing build
 const API = (import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 
 // Contenido editable desde "Mantenimiento web"; si la API no responde, se usan los datos por defecto.
@@ -142,7 +142,7 @@ const jsonLd = {
             <div class="slide-bg" style={`background-image: url('${resolverFoto(slide.imagenUrl)}')`}></div>
             <div class="slide-overlay"></div>
             <div class="container slide-content">
-              <span class="slide-tag">TECNICENTRO AUTOMOTRIZ SÁNCHEZ · CUMBAYÁ</span>
+              <span class="slide-tag">MECÁNICA AUTOMOTRIZSÁNCHEZ · CUMBAYÁ</span>
               <h1 class="slide-title">{slide.titulo}</h1>
               <p class="slide-desc">{slide.subtitulo}</p>
               <div class="slide-buttons">
@@ -340,7 +340,7 @@ const jsonLd = {
 
           <div class="location-map-wrap">
             <iframe
-              title="Ubicación TECNICENTRO AUTOMOTRIZ Sánchez"
+              title="Ubicación MECÁNICA AUTOMOTRIZSánchez"
               src="https://maps.google.com/maps?q=Mec%C3%A1nica%20Automotriz%20S%C3%A1nchez%20Cumbay%C3%A1&t=&z=15&ie=UTF8&iwloc=&output=embed"
               width="100%"
               height="100%"
@@ -360,7 +360,7 @@ const jsonLd = {
           {taller.logoUrl ? (
             <img class="footer-img" src={resolverFoto(taller.logoUrl)} alt={taller.nombre} loading="lazy" />
           ) : (
-            <span class="footer-logo">TECNICENTRO AUTOMOTRIZ SÁNCHEZ</span>
+            <span class="footer-logo">MECÁNICA AUTOMOTRIZSÁNCHEZ</span>
           )}
           <p>{taller.lema} · Especialistas en mecánica integral y mantenimiento vehicular.</p>
         </div>

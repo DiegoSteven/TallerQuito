@@ -1,0 +1,12 @@
+# Lo crea solo instalar-tarea.ps1 (no hace falta editarlo a mano). No se sube al repo.
+#
+# Remoto "vps": el servidor del taller por SFTP, con el usuario "respaldos" (solo lectura, encerrado en
+# /srv/respaldos; se prepara con infra/servidor-respaldos.sh). Entra con la llave de esta PC, sin contraseña.
+[vps]
+type = sftp
+host = app.tecnicentrosanchez.com
+user = respaldos
+key_file = C:\Taller\pc-taller\llave_respaldos
+# El usuario no tiene consola: no se pueden calcular hashes en el servidor.
+shell_type = none
+disable_hashcheck = true

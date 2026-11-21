@@ -1,9 +1,19 @@
-name: CI
+name: CI / Despliegue
 
+# Pull request → verificar + construir imágenes (sin publicar).
+# Push a main → verificar + construir y publicar imágenes en ghcr.io + desplegar en el VPS
+#               (el despliegue solo corre cuando la variable DESPLIEGUE_ACTIVO = true).
 on:
   push:
     branches: [main]
   pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   verificar:
@@ -31,7 +41,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
       - run: psql "$DATABASE_URL" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
-      - run: pnpm --filter @taller/api exec prisma migrate deploy
+      - name: Migraciones (las mismas que aplicará producción)
+        run: pnpm --filter @taller/api exec prisma migrate deploy
       - run: pnpm --filter @taller/shared build
       - run: pnpm typecheck
       - run: pnpm test
@@ -40,19 +51,98 @@ jobs:
   imagenes:
     needs: verificar
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    env:
+      PUBLICAR: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose build
+      - name: Versión y nombre de las imágenes
+        id: version
+        run: |
+          echo "tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "base=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - name: Entrar a GitHub Container Registry
+        if: env.PUBLICAR == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-  # Despliegue al VPS (se activa cuando el servidor esté listo):
-  # deploy:
-  #   needs: imagenes
-  #   if: github.ref == 'refs/heads/main'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: appleboy/ssh-action@v1
-  #       with:
-  #         host: ${{ secrets.VPS_HOST }}
-  #         username: ${{ secrets.VPS_USER }}
-  #         key: ${{ secrets.VPS_SSH_KEY }}
-  #         script: cd ~/taller && git pull && docker compose up -d --build
+      - name: Imagen API (NestJS)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: ${{ env.PUBLICAR == 'true' }}
+          tags: |
+            ${{ steps.version.outputs.base }}-api:${{ steps.version.outputs.tag }}
+            ${{ steps.version.outputs.base }}-api:latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Imagen web (React + Caddy)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/caddy/Dockerfile
+          build-args: VITE_LANDING_URL=${{ vars.LANDING_URL || 'https://tecnicentrosanchez.com' }}
+          push: ${{ env.PUBLICAR == 'true' }}
+          tags: |
+            ${{ steps.version.outputs.base }}-web:${{ steps.version.outputs.tag }}
+            ${{ steps.version.outputs.base }}-web:latest
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+      - name: Imagen respaldos
+        uses: docker/build-push-action@v6
+        with:
+          context: infra/backup
+          push: ${{ env.PUBLICAR == 'true' }}
+          tags: |
+            ${{ steps.version.outputs.base }}-backup:${{ steps.version.outputs.tag }}
+            ${{ steps.version.outputs.base }}-backup:latest
+          cache-from: type=gha,scope=backup
+          cache-to: type=gha,mode=max,scope=backup
+
+  desplegar:
+    needs: imagenes
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DESPLIEGUE_ACTIVO == 'true'
+    runs-on: ubuntu-latest
+    environment: produccion
+    concurrency:
+      group: produccion
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: read
+    env:
+      DESTINO: ${{ secrets.VPS_USUARIO }}@${{ secrets.VPS_HOST }}
+      TAG: ${{ needs.imagenes.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Llave SSH del CI
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Huella del servidor verificada a mano (ssh-keyscan) y guardada como secreto: evita conectarse a un impostor.
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Copiar configuración al servidor (compose y scripts; nada de código ni secretos)
+        run: scp -q -r docker-compose.yml infra "$DESTINO:taller/"
+      - name: Desplegar ${{ env.TAG }}
+        # El token de GitHub viaja por la entrada estándar (no queda en la línea de comandos del servidor)
+        # y solo sirve mientras dura este job: el VPS no guarda ninguna clave de GitHub.
+        run: |
+          printf '%s' "${{ secrets.GITHUB_TOKEN }}" | ssh "$DESTINO" "
+            cd ~/taller &&
+            docker login ghcr.io -u '${{ github.actor }}' --password-stdin > /dev/null &&
+            bash infra/desplegar.sh '$TAG'; s=\$?; docker logout ghcr.io > /dev/null; exit \$s"
+      - name: Comprobar desde internet
+        if: vars.APP_URL != ''
+        run: curl -fsS --retry 5 --retry-delay 5 "${{ vars.APP_URL }}/api/health"

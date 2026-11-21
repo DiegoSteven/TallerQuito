@@ -12,7 +12,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
-    "crear-dueno": "node prisma/crear-dueno.js"
+    "crear-dueno": "node prisma/crear-dueno.js",
+    "importar-clientes": "node --env-file=.env prisma/importar-clientes.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

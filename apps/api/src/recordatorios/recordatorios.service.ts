@@ -6,13 +6,14 @@ import { PrismaService } from '../prisma/prisma.service';
 /** Forma mínima de una orden que necesita el cálculo. */
 interface OrdenParaCalculo {
   fecha: Date;
-  kilometraje: number;
+  /** null = historial importado sin km. */
+  kilometraje: number | null;
   items: { tipoServicio: TipoServicio | null; intervaloKm?: number | null; intervaloMeses?: number | null }[];
 }
 
 export interface ServicioVehiculo {
   tipoServicio: TipoServicio;
-  ultimo: { fecha: Date; km: number };
+  ultimo: { fecha: Date; km: number | null };
   recordatorio: Recordatorio | null;
   /** true si el último trabajo tiene un intervalo propio distinto al del catálogo. */
   personalizado: boolean;
@@ -27,7 +28,7 @@ export class RecordatoriosService {
     const visitas = ordenes.map((o) => ({ fecha: o.fecha, km: o.kilometraje }));
     const kmEstimado = estimarKmActual(visitas, hoy);
 
-    type Ultimo = { tipoServicio: TipoServicio; fecha: Date; km: number; intervaloKm: number | null; intervaloMeses: number | null };
+    type Ultimo = { tipoServicio: TipoServicio; fecha: Date; km: number | null; intervaloKm: number | null; intervaloMeses: number | null };
     const ultimos = new Map<number, Ultimo>();
     for (const o of [...ordenes].sort((a, b) => a.fecha.getTime() - b.fecha.getTime())) {
       for (const it of o.items) {

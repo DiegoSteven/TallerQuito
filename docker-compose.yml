@@ -1,4 +1,6 @@
-# Producción (VPS).  Uso:  docker compose up -d --build
+# Producción (VPS).
+#   Normal: lo despliega GitHub Actions (imágenes ya construidas en ghcr.io) con infra/desplegar.sh.
+#   Manual: TAG=sha-abc1234 ./infra/desplegar.sh    ·    Construir en el propio servidor: docker compose up -d --build
 # Solo Caddy expone puertos (80/443). La base de datos y la API quedan en la red interna.
 
 name: taller
@@ -23,6 +25,7 @@ services:
     networks: [interna]
 
   api:
+    image: ${IMAGENES:-ghcr.io/diegosteven/tallerquito}-api:${TAG:-latest}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -39,12 +42,15 @@ services:
       NUMERO_ORDEN_INICIAL: ${NUMERO_ORDEN_INICIAL:-}
       # Dominios que pueden leer la API (la landing pública), separados por coma
       CORS_ORIGENES: ${CORS_ORIGENES:-}
+      # Cloudflare Pages: al guardar en "Mantenimiento web" se reconstruye la landing
+      LANDING_DEPLOY_HOOK: ${LANDING_DEPLOY_HOOK:-}
     volumes:
       # Fotos subidas desde "Mantenimiento web": sobreviven a reconstruir la imagen
       - uploads:/app/uploads
     networks: [interna]
 
   caddy:
+    image: ${IMAGENES:-ghcr.io/diegosteven/tallerquito}-web:${TAG:-latest}
     build:
       context: .
       dockerfile: infra/caddy/Dockerfile
@@ -65,6 +71,7 @@ services:
     networks: [interna]
 
   backup:
+    image: ${IMAGENES:-ghcr.io/diegosteven/tallerquito}-backup:${TAG:-latest}
     build: ./infra/backup
     restart: unless-stopped
     depends_on:
@@ -75,15 +82,13 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGHOST: postgres
-      BACKUP_CRON: ${BACKUP_CRON:-0 3 * * *}
-      BACKUP_REMOTE: ${BACKUP_REMOTE:-}
+      BACKUP_CRON: ${BACKUP_CRON:-0 */6 * * *}
       TZ: ${TZ:-America/Guayaquil}
     volumes:
-      - ./backups:/backups
-      # Fotos de la landing (solo lectura): se copian a ./backups/fotos y suben a R2
+      # En el VPS: /srv/respaldos/datos, la carpeta que la PC del taller descarga por SFTP (solo lectura).
+      - ${BACKUP_DIR:-./backups}:/backups
+      # Fotos de la landing (solo lectura): se copian a backups/fotos
       - uploads:/uploads:ro
-      # Carpeta montada completa: si rclone.conf no existe, solo se guarda la copia local.
-      - ./infra/backup:/config/rclone:ro
     networks: [interna]
 
 volumes:

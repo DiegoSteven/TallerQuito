@@ -16,7 +16,7 @@ const printer = new PdfPrinter({
 
 const ROJO = '#c8102e';
 const fecha = (d: Date) => d.toISOString().slice(0, 10).split('-').reverse().join('/');
-const km = (n: number) => n.toLocaleString('es-EC');
+const km = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleString('es-EC'));
 
 @ApiTags('reportes')
 @ApiBearerAuth()

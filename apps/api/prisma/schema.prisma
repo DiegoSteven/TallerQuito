@@ -55,6 +55,8 @@ model Cliente {
   actualizadoEn DateTime @updatedAt
 
   vehiculos Vehiculo[]
+  /// Órdenes en las que esta persona trajo / pagó el vehículo (puede no ser el dueño actual).
+  ordenes   OrdenTrabajo[]
 
   @@index([nombre])
   @@index([nombre(ops: raw("gin_trgm_ops"))], type: Gin, map: "clientes_nombre_trgm_idx")
@@ -104,6 +106,8 @@ model OrdenTrabajo {
   id            Int         @id @default(autoincrement())
   numero        Int         @unique @default(autoincrement())
   vehiculoId    Int
+  /// Quién trajo / pagó el carro en ESTA orden. El vehículo puede cambiar de dueño después.
+  clienteId     Int?
   mecanicoId    Int?
   creadoPorId   Int?
   fecha         DateTime    @db.Date
@@ -133,11 +137,13 @@ model OrdenTrabajo {
   actualizadoEn DateTime    @updatedAt
 
   vehiculo  Vehiculo    @relation(fields: [vehiculoId], references: [id])
+  cliente   Cliente?    @relation(fields: [clienteId], references: [id])
   mecanico  Usuario?    @relation("Mecanico", fields: [mecanicoId], references: [id])
   creadoPor Usuario?    @relation("CreadoPor", fields: [creadoPorId], references: [id])
   items     OrdenItem[]
 
   @@index([vehiculoId, fecha])
+  @@index([clienteId])
   @@index([fecha])
   @@map("ordenes_trabajo")
 }

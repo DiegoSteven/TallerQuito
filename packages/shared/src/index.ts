@@ -6,3 +6,4 @@ export * from './recepcion';
 export * from './dibujos';
 export * from './landing';
 
+export * from './importacion';

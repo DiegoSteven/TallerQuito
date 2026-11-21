@@ -3,8 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 // Sitio estático: se publica gratis en Cloudflare Pages (carpeta dist/).
 export default defineConfig({
-  // ⚠ Dominio provisional: cambiar por el real cuando se compre.
-  site: 'https://mecanicasanchez.com',
+  site: 'https://tecnicentrosanchez.com',
   vite: {
     resolve: {
       alias: {

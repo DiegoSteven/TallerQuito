@@ -65,7 +65,7 @@ const fechaHora = (d: Date | null) =>
     : null;
 const fechaDia = (d: Date) => d.toISOString().slice(0, 10).split('-').reverse().join('/');
 const dinero = (n: number) => `$${n.toFixed(2)}`;
-const km = (n: number) => n.toLocaleString('es-EC');
+const km = (n: number | null | undefined) => (n == null ? '' : n.toLocaleString('es-EC'));
 const mesAnio = (d: Date) => d.toLocaleDateString('es-EC', { month: 'short', year: 'numeric', timeZone: 'UTC' }).replace('.', '');
 
 /** "Próximo cambio: 158.300 km · may 2027" (el sticker del parabrisas), si el trabajo es del catálogo. */
@@ -189,10 +189,8 @@ function encabezado(o: OrdenDetalle, { recuadro }: Recuadros, logo: string | nul
       {
         width: 205,
         stack: logo
-          ? [
-              { image: logo, fit: [200, 62] },
-              { text: TALLER.lema, fontSize: 8, italics: true, color: GRIS, margin: [0, 3, 0, 0] },
-            ]
+          ? // El logo ya trae el nombre y el lema: no se repiten en texto.
+            [{ image: logo, fit: [205, 74] }]
           : [
           { text: 'TECNICENTRO AUTOMOTRIZ', fontSize: 8, bold: true, color: GRIS, characterSpacing: 2.5 },
           { text: 'SÁNCHEZ', fontSize: 28, bold: true, color: TINTA, characterSpacing: 1, lineHeight: 1, margin: [0, 2, 0, 1] },
@@ -225,7 +223,7 @@ function encabezado(o: OrdenDetalle, { recuadro }: Recuadros, logo: string | nul
 }
 
 function datosClienteVehiculo(o: OrdenDetalle, { recuadro }: Recuadros): Content {
-  const c = o.vehiculo.cliente;
+  const c = o.cliente ?? o.vehiculo.cliente; // quien trajo el carro en esta orden
   const v = o.vehiculo;
   return {
     margin: [0, 8, 0, 0],
@@ -521,7 +519,7 @@ function detalleTrabajos(o: OrdenDetalle, { recuadro }: Recuadros): Content[] {
 }
 
 function autorizacionYFirmas(o: OrdenDetalle, { recuadro }: Recuadros): Content[] {
-  const c = o.vehiculo.cliente;
+  const c = o.cliente ?? o.vehiculo.cliente; // quien trajo el carro en esta orden
   const lineaFirma = (titulo: string, detalle: string): Column => ({
     width: '*',
     stack: [
